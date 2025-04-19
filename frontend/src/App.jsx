@@ -8,6 +8,8 @@ const App = () => {
     <div>
       <ToastContainer/>
       <Routes>
+        <Route path='/login'element={<Login/>} />
+        <Route path='/email-verify'element={<EmailVerify/>} />
       </Routes>
     </div>
   )
