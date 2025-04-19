@@ -10,7 +10,7 @@ export default function Navbar() {
         <li><a href="#" className="hover:underline">Analytics</a></li>
       </ul>
       <div>
-        <a href="#" className="text-sm font-semibold hover:underline">Register</a>
+        <a href="http://localhost:5173/login" className="text-sm font-semibold hover:underline">Register</a>
       </div>
     </nav>
   );
