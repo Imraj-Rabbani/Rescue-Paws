@@ -1,0 +1,34 @@
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# Build output (Vite builds to 'dist' by default)
+frontend/dist/
+
+# Environment variables
+backend/.env
+frontend/.env
+.env
+
+# Logs
+backend/npm-debug.log*
+frontend/npm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Coverage reports (for testing)
+coverage/
+
+# Optional: If you use typescript, ignore tsbuildinfo
+*.tsbuildinfo
