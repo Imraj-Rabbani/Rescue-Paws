@@ -109,7 +109,7 @@ const Login = () => {
   const handleRegisterSubmit = (e) => handleAuthSubmit(e, "Sign Up");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center py-6">
+    <div className="min-h-screen flex items-center justify-center py-6 bg-[url('../../public/new_background.png')] bg-cover bg-center">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
         <div className="header mb-8 text-center">
           <a href="http://localhost:5173/">
