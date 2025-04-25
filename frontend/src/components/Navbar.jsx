@@ -79,7 +79,13 @@ export default function Navbar() {
         {isLoggedIn ? (
           <>
             <div className="flex items-center gap-8">
-              <span className="text-sm font-semibold">{userData.name}</span>
+              {/* <span className="text-sm font-semibold">{userData.name}</span> */}
+              <button
+              onClick={() => navigate("/profile")}
+              className="text-sm font-semibold hover:underline"
+            >
+              {userData.name}
+            </button>
               <button
                 onClick={handleLogout}
                 className="text-sm font-semibold hover:underline"

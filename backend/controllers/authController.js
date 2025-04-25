@@ -187,15 +187,15 @@ export const isAuthenticated = async(req, res) => {
 // In your authController.js
 export const authStatus = async (req, res) => {
     const {userId} = req
-    console.log("req print korabo")
-    console.log(req)
+    console.log("req print korabo in auth status")
+    // console.log(req)
     try {
         if (!userId) {
             return res.json({ success: false });
         }
 
         const user = await userModel.findById(userId).select('-password');
-        
+        // console.log(user, "Inside Auth status")
         if (!user) {
             return res.json({ success: false });
         }
@@ -212,31 +212,3 @@ export const authStatus = async (req, res) => {
         res.status(500).json({ success: false });
     }
 };
-
-/*
-HTTP/1.1 200 OK
-X-Powered-By: Express
-Access-Control-Allow-Origin: http://localhost:5173
-Vary: Origin
-Access-Control-Allow-Credentials: true
-Set-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MDllODNhYWVjMzIyMDQ0MTg2ZWI3MCIsImlhdCI6MTc0NTQ3OTczOCwiZXhwIjoxNzQ2MDg0NTM4fQ.pEu8zlpMEZ6sxq8MS918FiLCz9dV14VRslRizMVnBd0; Max-Age=604800; Path=/; Expires=Thu, 01 May 2025 07:28:58 GMT; HttpOnly; SameSite=Strict
-Content-Type: application/json; charset=utf-8
-Content-Length: 16
-ETag: W/"10-oV4hJxRVSENxc/wX8+mA4/Pe4tA"
-Date: Thu, 24 Apr 2025 07:28:59 GMT
-Connection: keep-alive
-Keep-Alive: timeout=5
-
-HTTP/1.1 200 OK
-X-Powered-By: Express
-Access-Control-Allow-Origin: http://localhost:5173
-Vary: Origin
-Access-Control-Allow-Credentials: true
-Set-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MDllODNhYWVjMzIyMDQ0MTg2ZWI3MCIsImlhdCI6MTc0NTQ3OTgzNSwiZXhwIjoxNzQ2MDg0NjM1fQ.ppO-BhQ3PW6Fdvz1aTHDBADCqwJOi7O27vs8IP-_TT4; Max-Age=604800; Path=/; Expires=Thu, 01 May 2025 07:30:35 GMT; HttpOnly; SameSite=Strict
-Content-Type: application/json; charset=utf-8
-Content-Length: 16
-ETag: W/"10-oV4hJxRVSENxc/wX8+mA4/Pe4tA"
-Date: Thu, 24 Apr 2025 07:30:35 GMT
-Connection: keep-alive
-Keep-Alive: timeout=5
-*/
