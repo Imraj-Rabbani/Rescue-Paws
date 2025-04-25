@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import HomePage from './pages/HomePage'
 import Products from './pages/Products'
 import Cart from './pages/Cart'
+import ProfilePage from './pages/Profile'
 const App = () => {
   return (
     <div>
@@ -15,6 +16,7 @@ const App = () => {
         <Route path='/'element={<HomePage/>} />
         <Route path='/products'element={<Products/>}/>
         <Route path="/cart" element={<Cart/>} />
+        <Route path="/profile" element={<ProfilePage/>} />
       </Routes>
     </div>
   )
