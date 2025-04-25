@@ -42,6 +42,27 @@ export const setUserData = async (req, res) => {
   }
 };
 
+export const addPoints = async (req, res) => {
+  try {
+    const {userId} = req; // assuming you have authentication middleware
+    const { bkashNumber, amount } = req.body;
 
+    if (!bkashNumber || !amount) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.points += parseInt(amount); // add the new points
+    await user.save();
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to add points" });
+  }
+};
 
 
