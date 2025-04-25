@@ -50,7 +50,6 @@ export const register = async (req, res) => {
 
 
 export const login = async (req, res) => {
-    console.log("Test")
 
     const {email, password} = req.body
 
@@ -78,8 +77,6 @@ export const login = async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
-
-        console.log(token)
 
         return res.json({success:true})
 
@@ -187,15 +184,12 @@ export const isAuthenticated = async(req, res) => {
 // In your authController.js
 export const authStatus = async (req, res) => {
     const {userId} = req
-    console.log("req print korabo in auth status")
-    // console.log(req)
     try {
         if (!userId) {
             return res.json({ success: false });
         }
 
         const user = await userModel.findById(userId).select('-password');
-        // console.log(user, "Inside Auth status")
         if (!user) {
             return res.json({ success: false });
         }
@@ -205,7 +199,6 @@ export const authStatus = async (req, res) => {
             user: {
                 name: user.name,
                 email: user.email,
-                // include other profile fields you need
             }
         });
     } catch (error) {

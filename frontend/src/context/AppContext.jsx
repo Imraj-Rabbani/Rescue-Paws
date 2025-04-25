@@ -11,17 +11,12 @@ export const AppContextProvider = (props) => {
 
     // Add a function to check auth status when app loads
     const checkAuthStatus = async () => {
-        // console.log("Check Auth Status called")
         try {
             const response = await axios.get(`${backendUrl}/api/auth/status`, {
                 withCredentials: true
             });
-            // console.log("Backend theke user data")
-            // console.log(response.data)
-            
             if (response.data.success) {
                 setIsLoggedIn(true);
-                // console.log(response.data.user,'userid milse')
                 setUserData(response.data.user);
             }
         } catch (error) {
@@ -41,7 +36,7 @@ export const AppContextProvider = (props) => {
         setIsLoggedIn,
         userData, 
         setUserData,
-        checkAuthStatus // Optional: expose if you want to manually refresh auth status
+        checkAuthStatus 
     };
 
     return (

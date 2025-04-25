@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 export default function Navbar() {
   const { isLoggedIn, setIsLoggedIn, userData, backendUrl } =
     useContext(AppContext);
-  // console.log(userData);
   const navigate = useNavigate();
 
   const handleLogout = async () => {

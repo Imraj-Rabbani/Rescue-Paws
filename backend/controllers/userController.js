@@ -9,7 +9,6 @@ export const getUserData = async (req, res) => {
     }
 
     const user = await userModel.findById(userId).select("-password");
-    // console.log(user.role, "Inside getUserData");™
     if (!user) {
       return res.json({ success: false });
     }
@@ -31,10 +30,8 @@ export const getUserData = async (req, res) => {
 };
 
 export const setUserData = async (req, res) => {
-  console.log("Set User controller e ashtese")
   const { userId } = req;
   try {
-    console.log(req.body, "Inside set user data")
     const updatedUser = await userModel.findByIdAndUpdate(userId, req.body, { new: true }).select("-password");
     res.json(updatedUser);
   } catch (err) {
@@ -44,7 +41,7 @@ export const setUserData = async (req, res) => {
 
 export const addPoints = async (req, res) => {
   try {
-    const {userId} = req; // assuming you have authentication middleware
+    const {userId} = req;
     const { bkashNumber, amount } = req.body;
 
     if (!bkashNumber || !amount) {
@@ -56,7 +53,7 @@ export const addPoints = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.points += parseInt(amount); // add the new points
+    user.points += parseInt(amount);
     await user.save();
 
     res.json({ user });
