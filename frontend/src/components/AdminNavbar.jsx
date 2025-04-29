@@ -60,13 +60,13 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
         <Link to="/admindashboard" style={{ textDecoration: 'none' }}>
           <SidebarItem icon={<LayoutDashboard />} label="Dashboard" showLabel={isSidebarOpen} onClick={() => setActiveTab('Dashboard')} isActive={activeTab === 'Dashboard'} />
         </Link>
-        <Link to="/products" style={{ textDecoration: 'none' }}>
+        <Link to="/adminproducts" style={{ textDecoration: 'none' }}>
           <SidebarItem icon={<Package />} label="Products" showLabel={isSidebarOpen} onClick={() => setActiveTab('Products')} isActive={activeTab === 'Products'} />
         </Link>
-        <Link to="/orders" style={{ textDecoration: 'none' }}>
+        <Link to="/adminorders" style={{ textDecoration: 'none' }}>
           <SidebarItem icon={<ClipboardList />} label="Orders" showLabel={isSidebarOpen} onClick={() => setActiveTab('Orders')} isActive={activeTab === 'Orders'} />
         </Link>
-        <Link to="/volunteers" style={{ textDecoration: 'none' }}>
+        <Link to="/adminvolunteers" style={{ textDecoration: 'none' }}>
           <SidebarItem icon={<Users />} label="Volunteers" showLabel={isSidebarOpen} onClick={() => setActiveTab('Volunteers')} isActive={activeTab === 'Volunteers'} />
         </Link>
         <Link to="/revenue" style={{ textDecoration: 'none' }}>
