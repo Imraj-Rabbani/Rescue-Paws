@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/mongodb.js";
 import authRouter from './routes/authRoutes.js'
 import userRouter from "./routes/userRoutes.js";
+import productRouter from './routes/productRoutes.js';
 
 const app = express()
 
@@ -14,8 +15,9 @@ connectDB()
 
 const allowedOrigins = ['http://localhost:5173']
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
+// Increase the limit for JSON and URL-encoded bodies
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser())
 app.use(cors({origin: allowedOrigins ,credentials: true}))
 
@@ -24,5 +26,6 @@ app.use(cors({origin: allowedOrigins ,credentials: true}))
 app.get('/', (req, res )=> res.send("API Working"))
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
+app.use('/api/products', productRouter);
 
 app.listen(port, () => console.log(`Server started on PORT: ${port}`))
