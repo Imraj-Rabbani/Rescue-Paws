@@ -50,6 +50,7 @@ export const register = async (req, res) => {
 
 
 export const login = async (req, res) => {
+
     const {email, password} = req.body
 
     if(!email || !password){
@@ -72,12 +73,10 @@ export const login = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.Node_ENV === 'production',
-            sameSite: process.env.Node_ENV === 'production' ? 'none' : 'strict', 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
-
-        
 
         return res.json({success:true})
 
@@ -180,3 +179,29 @@ export const isAuthenticated = async(req, res) => {
         return res.json({success:false, message: error.message})
     }
 }
+
+
+// In your authController.js
+export const authStatus = async (req, res) => {
+    const {userId} = req
+    try {
+        if (!userId) {
+            return res.json({ success: false });
+        }
+
+        const user = await userModel.findById(userId).select('-password');
+        if (!user) {
+            return res.json({ success: false });
+        }
+
+        res.json({
+            success: true,
+            user: {
+                name: user.name,
+                email: user.email,
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false });
+    }
+};
