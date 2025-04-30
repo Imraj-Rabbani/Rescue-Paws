@@ -330,7 +330,7 @@ const ProfilePage = () => {
                           setError(null);
 
                           const response = await fetch(
-                            "http://localhost:4000/api/user/upload-rescue",
+                            "http://localhost:4000/api/user/upload/rescue",
                             {
                               method: "POST",
                               credentials: "include",
