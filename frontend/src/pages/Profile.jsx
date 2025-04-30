@@ -16,6 +16,9 @@ const ProfilePage = () => {
   const [showAddPoints, setShowAddPoints] = useState(false);
   const [bkashNumber, setBkashNumber] = useState("");
   const [amount, setAmount] = useState("");
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -108,33 +111,36 @@ const ProfilePage = () => {
     try {
       setLoading(true);
       setError(null);
-  
+
       if (!bkashNumber || !amount) {
         setError("Please fill all fields");
         return;
       }
-  
-      const response = await fetch("http://localhost:4000/api/user/add-points", {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ bkashNumber, amount }),
-      });
-  
+
+      const response = await fetch(
+        "http://localhost:4000/api/user/add-points",
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ bkashNumber, amount }),
+        }
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to add points");
       }
-  
+
       const data = await response.json();
       setUser(data.user); // Update the user with new points
-  
+
       setBkashNumber("");
       setAmount("");
       setSuccess(true);
-  
+
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -142,7 +148,6 @@ const ProfilePage = () => {
       setLoading(false);
     }
   };
-  
 
   if (loading && !user) {
     return <div className="text-center p-4">Loading...</div>;
@@ -165,9 +170,12 @@ const ProfilePage = () => {
           <ul className="space-y-4 text-gray-700">
             <li
               className={`font-semibold cursor-pointer ${
-                !showAddPoints ? "text-blue-600" : ""
+                !showAddPoints && !showImageUpload ? "text-blue-600" : ""
               }`}
-              onClick={() => setShowAddPoints(false)}
+              onClick={() => {
+                setShowAddPoints(false);
+                setShowImageUpload(false);
+              }}
             >
               Account Information
             </li>
@@ -175,9 +183,23 @@ const ProfilePage = () => {
               className={`cursor-pointer ${
                 showAddPoints ? "text-blue-600 font-semibold" : ""
               }`}
-              onClick={() => setShowAddPoints(true)}
+              onClick={() => {
+                setShowAddPoints(true);
+                setShowImageUpload(false);
+              }}
             >
               Add Points
+            </li>
+            <li
+              className={`cursor-pointer ${
+                showImageUpload ? "text-blue-600 font-semibold" : ""
+              }`}
+              onClick={() => {
+                setShowAddPoints(false);
+                setShowImageUpload(true);
+              }}
+            >
+              Upload Rescue Image
             </li>
           </ul>
         </div>
@@ -269,6 +291,76 @@ const ProfilePage = () => {
                     </button>
                   </div>
                 </div>
+                {showImageUpload && (
+                  <div>
+                    <h1 className="text-2xl font-bold mb-6">
+                      Upload Rescue Photo
+                    </h1>
+
+                    {error && (
+                      <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+                        {error}
+                      </div>
+                    )}
+                    {success && (
+                      <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+                        Image uploaded successfully!
+                      </div>
+                    )}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setSelectedImage(e.target.files[0])}
+                      className="mb-4 border"
+                    />
+
+                    <button
+                      onClick={async () => {
+                        if (!selectedImage) {
+                          setError("Please select an image");
+                          return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append("image", selectedImage);
+
+                        try {
+                          setUploading(true);
+                          setError(null);
+
+                          const response = await fetch(
+                            "http://localhost:4000/api/user/upload-rescue",
+                            {
+                              method: "POST",
+                              credentials: "include",
+                              body: formData,
+                            }
+                          );
+
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(
+                              errorData.message || "Failed to upload image"
+                            );
+                          }
+
+                          setSuccess(true);
+                          setSelectedImage(null);
+                          setTimeout(() => setSuccess(false), 3000);
+                        } catch (err) {
+                          setError(err.message);
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                      disabled={uploading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {uploading ? "Uploading..." : "Upload Image"}
+                    </button>
+                  </div>
+                )}
               </>
             )}
 
