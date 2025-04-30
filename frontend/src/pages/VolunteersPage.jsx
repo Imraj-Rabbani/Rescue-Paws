@@ -9,7 +9,7 @@ export default function VolunteersPage() {
     try {
       setLoading(true);
       const res = await fetch(
-        'http://localhost:4000/api/volunteers/'
+        `http://localhost:4000/api/volunteers${location ? `?location=${encodeURIComponent(location)}` : ''}`
       );
       if (!res.ok) throw new Error('Failed to fetch volunteers');
       const data = await res.json();

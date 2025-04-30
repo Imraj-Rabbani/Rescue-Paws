@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 
 export const volunteers = async (req, res) => {
   try {
+    console.log(req)
     const { location } = req.query;
 
     // Base query: get all users with role 'volunteer'
