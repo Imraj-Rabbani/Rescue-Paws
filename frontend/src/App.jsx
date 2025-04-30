@@ -12,6 +12,7 @@ import HomePage from './pages/HomePage'
 import Products from './pages/Products'
 import Cart from './pages/Cart'
 import ProfilePage from './pages/Profile'
+import VolunteersPage from './pages/VolunteersPage';
 const App = () => {
   return (
     <div>
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/adminvolunteers" element={<VolunteerPage />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/revenue" element={<RevenuePage />} />
+        <Route path="/volunteers" element={<VolunteersPage />} />
       </Routes>
     </div>
   )

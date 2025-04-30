@@ -7,6 +7,10 @@ import connectDB from "./config/mongodb.js";
 import authRouter from './routes/authRoutes.js'
 import userRouter from "./routes/userRoutes.js";
 import productRouter from './routes/productRoutes.js';
+import volunteerRouter from './routes/volunteerRoutes.js';
+
+
+
 
 const app = express()
 
@@ -27,5 +31,7 @@ app.get('/', (req, res )=> res.send("API Working"))
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
 app.use('/api/products', productRouter);
+app.use('/api/volunteers', volunteerRouter);
+
 
 app.listen(port, () => console.log(`Server started on PORT: ${port}`))
