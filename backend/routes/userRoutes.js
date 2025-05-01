@@ -9,4 +9,5 @@ userRouter.put('/profile', userAuth, setUserData)
 userRouter.put('/add-points',userAuth, addPoints)
 
 
+
 export default userRouter;
