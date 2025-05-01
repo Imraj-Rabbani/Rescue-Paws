@@ -1,13 +1,25 @@
-const API_URL = '/api/products';
+import axios from 'axios';
 
-export const getProducts = async () => {
-  const response = await fetch(API_URL);
-  if (!response.ok) throw new Error('Failed to fetch products');
-  return response.json();
+const API_URL = 'http://localhost:4000/api/products'; // Update if you deployed it somewhere
+
+// Fetch all products
+export const getAllProducts = async () => {
+  try {
+    const res = await axios.get(API_URL);
+    return res.data;
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    return [];
+  }
 };
 
+// Fetch single product (optional for detail page)
 export const getProductById = async (id) => {
-  const response = await fetch(`${API_URL}/${id}`);
-  if (!response.ok) throw new Error('Failed to fetch product');
-  return response.json();
+  try {
+    const res = await axios.get(`${API_URL}/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error('Error fetching product by ID:', err);
+    return null;
+  }
 };
