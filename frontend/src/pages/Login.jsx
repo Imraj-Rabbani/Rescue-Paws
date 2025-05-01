@@ -1,13 +1,13 @@
 import React, { useContext } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { AppContent } from "../context/AppContext";
+import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { backendUrl, setIsLoggedIn } = useContext(AppContent);
+  const { backendUrl, setIsLoggedIn, checkAuthStatus } = useContext(AppContext);
 
   const [state, setState] = useState("Sign Up");
   const [loginData, setLoginData] = useState({
@@ -76,6 +76,7 @@ const Login = () => {
           `${type === "Login" ? "Login" : "Registration"} successful!`
         );
         setIsLoggedIn(true);
+        checkAuthStatus();
         navigate("/");
         // Reset form data after successful submission
         if (type === "Login") {
@@ -109,12 +110,13 @@ const Login = () => {
   const handleRegisterSubmit = (e) => handleAuthSubmit(e, "Sign Up");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center py-6">
+
+    <div className="min-h-screen flex items-center justify-center py-6 bg-[url('new_background.png')] bg-cover bg-center">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
         <div className="header mb-8 text-center">
           <a href="http://localhost:5173/">
             <img
-              src="../../public/logo_new.png"
+              src="/logo_new.png"
               alt="Logo"
               className="h-[200px] mx-auto"
             />
