@@ -85,3 +85,21 @@ export const deleteProduct = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+export const getRecommendedProducts = async (req, res) => {
+    const { categories = '', exclude = '' } = req.query;
+  
+    try {
+      const categoryArray = categories.split(',').filter(Boolean);
+      const excludeArray = exclude.split(',').filter(Boolean);
+  
+      const recommended = await Product.find({
+        category: { $in: categoryArray },
+        id: { $nin: excludeArray }
+      }).limit(6);
+  
+      res.json(recommended);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch recommendations', error: error.message });
+    }
+  };
+  
