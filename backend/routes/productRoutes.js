@@ -6,7 +6,8 @@ import {
     getProductById,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getRecommendedProducts
 } from '../controllers/productController.js';
 
 // GET all products
@@ -23,5 +24,8 @@ router.put('/:id', updateProduct);
 
 // DELETE a product by ID
 router.delete('/:id', deleteProduct);
+
+
+router.get('/recommendations', getRecommendedProducts);
 
 export default router;
