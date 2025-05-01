@@ -1,10 +1,11 @@
-// src/components/ProductCard.jsx
 import React from "react";
 import { FiStar } from "react-icons/fi";
+import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col">
+    <Link to={`/products/${product.id}`}>
+      <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col">
       {/* Product Image */}
       <div className="relative">
         <img 
@@ -61,6 +62,7 @@ const ProductCard = ({ product }) => {
         </div>
       </div>
     </div>
+    </Link>  
   );
 };
 
