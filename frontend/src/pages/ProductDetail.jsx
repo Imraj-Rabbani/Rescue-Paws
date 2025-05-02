@@ -68,11 +68,10 @@ const ProductDetail = () => {
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-96 object-cover rounded-lg shadow"
+            className="w-full h-98 object-contain rounded-lg shadow"
           />
           <div className="flex gap-2 mt-4">
-            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20 rounded border" />
-            <img src={product.imageUrl} alt="Thumb 2" className="w-20 h-20 rounded border" />
+            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20  object-contain  rounded border" />
           </div>
         </div>
 
@@ -84,11 +83,11 @@ const ProductDetail = () => {
             <div className="mb-4">
               {product.discount ? (
                 <>
-                  <div className="text-2xl font-semibold text-purple-600">BDT {discountedPrice}</div>
-                  <div className="text-gray-400 line-through text-sm">BDT {product.sellingPrice}</div>
+                  <div className="text-2xl font-semibold text-purple-600">$ {discountedPrice}</div>
+                  <div className="text-gray-400 line-through text-sm">$ {product.sellingPrice}</div>
                 </>
               ) : (
-                <div className="text-2xl font-semibold">BDT {product.sellingPrice}</div>
+                <div className="text-2xl font-semibold">$ {product.sellingPrice}</div>
               )}
             </div>
 

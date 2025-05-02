@@ -26,9 +26,9 @@ const ProductCard = ({ product }) => {
       {/* Product Image */}
       <div className="relative">
         <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="h-48 w-full object-cover"
+        src={product.imageUrl}
+        alt={product.name}
+        className="w-full h-70 p-2"
         />
         {product.discount && (
           <div className="absolute top-3 right-3 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full">
