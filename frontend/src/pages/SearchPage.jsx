@@ -1,31 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { useSearch } from '../context/SearchContext';
-import { getAllProducts } from '../services/ProductService';
+import { AppContext } from '../context/AppContext';
 import ProductCard from '../components/ProductCard';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
 
 const SearchPage = () => {
   const { searchTerm } = useSearch();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { productData, productLoading } = useContext(AppContext);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getAllProducts();
-        setProducts(data);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  const results = products.filter(product =>
+  const results = productData.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -34,16 +18,16 @@ const SearchPage = () => {
       <ProductNavbar />
       <div className="container mx-auto px-6 py-12">
         <h2 className="text-2xl font-bold mb-4">Search Results for "{searchTerm}"</h2>
-        {loading ? (
+        {productLoading ? (
           <div className="text-gray-500">Loading...</div>
-        ) : results.length ? (
+        ) : results.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {results.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <p>No products found.</p>
+          <p className="text-gray-500">No products found.</p>
         )}
       </div>
       <Footer />

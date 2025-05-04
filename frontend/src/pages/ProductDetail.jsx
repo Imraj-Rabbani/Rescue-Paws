@@ -3,52 +3,39 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
-import { getProductById, getAllProducts } from '../services/ProductService';
 import { AppContext } from '../context/AppContext';
 import '../index.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useContext(AppContext);
+  const { productData, productLoading, addToCart } = useContext(AppContext);
 
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    const fetchProductAndRelated = async () => {
-      try {
-        const current = await getProductById(id);
-        setProduct(current);
+    if (!productLoading) {
+      const current = productData.find(p => p.id === id);
+      setProduct(current);
 
-        const all = await getAllProducts();
-        const related = all
-          .filter(p => p.id !== id && p.category === current.category)
-          .slice(0, 4);
+      const related = productData
+        .filter(p => p.id !== id && p.category === current?.category)
+        .slice(0, 4);
 
-        // If not enough related, show any others
-        if (related.length < 4) {
-          const fallback = all
-            .filter(p => p.id !== id && !related.includes(p))
-            .slice(0, 4 - related.length);
-          setRelatedProducts([...related, ...fallback]);
-        } else {
-          setRelatedProducts(related);
-        }
-
-      } catch (err) {
-        console.error('Error fetching product details:', err);
-      } finally {
-        setLoading(false);
+      if (related.length < 4) {
+        const fallback = productData
+          .filter(p => p.id !== id && !related.includes(p))
+          .slice(0, 4 - related.length);
+        setRelatedProducts([...related, ...fallback]);
+      } else {
+        setRelatedProducts(related);
       }
-    };
+    }
+  }, [id, productData, productLoading]);
 
-    fetchProductAndRelated();
-  }, [id]);
-
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (productLoading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
   if (!product) return <div className="p-8 text-red-500 text-center">Product not found</div>;
 
   const discountedPrice = product.discount
@@ -68,11 +55,10 @@ const ProductDetail = () => {
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-96 object-cover rounded-lg shadow"
+            className="w-full h-98 object-contain rounded-lg shadow"
           />
           <div className="flex gap-2 mt-4">
-            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20 rounded border" />
-            <img src={product.imageUrl} alt="Thumb 2" className="w-20 h-20 rounded border" />
+            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20 object-contain rounded border" />
           </div>
         </div>
 
@@ -84,11 +70,11 @@ const ProductDetail = () => {
             <div className="mb-4">
               {product.discount ? (
                 <>
-                  <div className="text-2xl font-semibold text-purple-600">BDT {discountedPrice}</div>
-                  <div className="text-gray-400 line-through text-sm">BDT {product.sellingPrice}</div>
+                  <div className="text-2xl font-semibold text-purple-600">$ {discountedPrice}</div>
+                  <div className="text-gray-400 line-through text-sm">$ {product.sellingPrice}</div>
                 </>
               ) : (
-                <div className="text-2xl font-semibold">BDT {product.sellingPrice}</div>
+                <div className="text-2xl font-semibold">$ {product.sellingPrice}</div>
               )}
             </div>
 
