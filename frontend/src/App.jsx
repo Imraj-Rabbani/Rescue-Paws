@@ -19,6 +19,7 @@ import ProductPage from './components/ProductPage';
 import VolunteerPage from './components/VolunteerPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RevenuePage from './components/RevenuePage';
+import VolunteerProfile from './pages/VolunteerProfile';
 
 const App = () => {
   return (
@@ -40,6 +41,7 @@ const App = () => {
         <Route path="/adminvolunteers" element={<VolunteerPage />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/revenue" element={<RevenuePage />} />
+        <Route path="/volunteers/:id" element={<VolunteerProfile />} />
       </Routes>
     </div>
   );

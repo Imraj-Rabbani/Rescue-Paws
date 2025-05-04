@@ -1,16 +1,24 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 export default function VolunteersPage() {
   const [volunteers, setVolunteers] = useState([]);
   const [searchLocation, setSearchLocation] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchVolunteers = async (location = '') => {
     try {
       setLoading(true);
       const res = await fetch(
-        `http://localhost:4000/api/volunteers${location ? `?location=${encodeURIComponent(location)}` : ''}`
+        `http://localhost:4000/api/volunteers${location ? `?location=${encodeURIComponent(location)}` : ''}`,
+        {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
       if (!res.ok) throw new Error('Failed to fetch volunteers');
       const data = await res.json();
@@ -29,6 +37,10 @@ export default function VolunteersPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     fetchVolunteers(searchLocation);
+  };
+
+  const handleViewProfile = (volunteerId) => {
+    navigate(`/volunteers/${volunteerId}`);
   };
 
   return (
@@ -135,7 +147,7 @@ export default function VolunteersPage() {
                         <div className="p-6">
                           <div className="flex items-start space-x-4">
                             <img
-                              src={`https://i.pravatar.cc/150?u=${user._id}`}
+                              src={user.imageUrl || `https://i.pravatar.cc/150?u=${user._id}`}
                               alt={user.name}
                               className="w-16 h-16 rounded-full object-cover border-2 border-blue-100"
                             />
@@ -163,13 +175,21 @@ export default function VolunteersPage() {
                                 </svg>
                                 <span>{user.location || 'Location not set'}</span>
                               </div>
-                              <p className="mt-3 text-gray-600">
+                              <div className="mt-1 flex items-center">
+                                <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                                  {user.points || 0} Rescue Points
+                                </span>
+                              </div>
+                              <p className="mt-3 text-gray-600 line-clamp-2">
                                 {user.bio || 'No bio available.'}
                               </p>
                             </div>
                           </div>
                           <div className="mt-4 pt-4 border-t border-gray-100">
-                            <button className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-full transition duration-200">
+                            <button 
+                              onClick={() => handleViewProfile(user._id)}
+                              className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-full transition duration-200"
+                            >
                               View Profile
                             </button>
                           </div>
