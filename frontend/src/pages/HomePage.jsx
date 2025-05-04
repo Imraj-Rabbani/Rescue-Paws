@@ -5,13 +5,12 @@ import { Link } from 'react-router-dom'
 
 const Home = () => {
   return (
-    <div>
+    <div >
       <Navbar/>
       <header
         className="relative bg-cover bg-center h-[80vh] flex items-center justify-center text-white text-center"
-        style={{ backgroundImage: "url('/puppy-banner.jpg')" }}
-      >
-        <div className="bg-black bg-opacity-50 p-6 rounded">
+        style={{ backgroundImage: "url('/puppy-banner.jpg')" }}>
+        <div className="p-6 rounded text-center" style={{backgroundColor: "rgba(0, 0, 0, 0.4)",backdropFilter: "blur(3px)",}}>
           <h1 className="text-4xl md:text-6xl font-extrabold mb-4">Help Animals in Need</h1>
           <p className="text-lg mb-6 max-w-2xl mx-auto">
             Join our STRAY PAWS community of volunteers and donors working together to rescue and care for animals in need. Your contribution, whether time or resources, makes a real difference.
@@ -80,6 +79,7 @@ const Home = () => {
           <button className="bg-white border border-gray-400 px-6 py-2 rounded-md hover:bg-gray-200">Learn more</button>
         </div>
       </section>
+      <section className="bg-[#FFFAF0]"></section>
       <Footer/>
     </div>
     
