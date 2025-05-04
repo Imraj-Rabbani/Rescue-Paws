@@ -9,33 +9,47 @@ export const AppContextProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [cart, setCart] = useState([]);
-  const [cartMessage, setCartMessage] = useState(null); // message to show temporary cart action
+  const [cartMessage, setCartMessage] = useState(null);
 
-  // ✅ Check login status on load
+  // NEW: Product caching
+  const [productData, setProductData] = useState([]);
+  const [productLoading, setProductLoading] = useState(true);
+
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get(`${backendUrl}/api/auth/status`, {
-        withCredentials: true
+      const res = await axios.get(`${backendUrl}/api/auth/status`, {
+        withCredentials: true,
       });
-      if (response.data.success) {
+      if (res.data.success) {
         setIsLoggedIn(true);
-        setUserData(response.data.user);
+        setUserData(res.data.user);
       }
     } catch (error) {
-        console.error("Auth check failed:", error); // now 'error' is used
-        setIsLoggedIn(false);
-        setUserData(null);
-      }
+      console.error("Auth check failed:", error);
+      setIsLoggedIn(false);
+      setUserData(null);
+    }
+  };
+
+  const fetchProducts = async () => {
+    setProductLoading(true);
+    try {
+      const res = await axios.get(`${backendUrl}/api/products`);
+      setProductData(res.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setProductLoading(false);
+    }
   };
 
   useEffect(() => {
     checkAuthStatus();
+    fetchProducts();
   }, []);
 
-  // ✅ Add to Cart with visual feedback
   const addToCart = (product, quantity = 1) => {
     const exists = cart.find(item => item.id === product.id);
-
     if (exists) {
       setCart(cart.map(item =>
         item.id === product.id
@@ -47,17 +61,13 @@ export const AppContextProvider = (props) => {
     }
 
     setCartMessage(`${product.name} added to cart`);
-    setTimeout(() => setCartMessage(null), 2000); // Message clears after 2 seconds
+    setTimeout(() => setCartMessage(null), 2000);
   };
 
-  // ✅ Update Cart Quantity
   const updateCartItemQuantity = (id, quantity) => {
-    setCart(cart.map(item =>
-      item.id === id ? { ...item, quantity } : item
-    ));
+    setCart(cart.map(item => item.id === id ? { ...item, quantity } : item));
   };
 
-  // ✅ Remove Item from Cart
   const removeFromCart = (id) => {
     setCart(cart.filter(item => item.id !== id));
   };
@@ -73,7 +83,10 @@ export const AppContextProvider = (props) => {
     addToCart,
     updateCartItemQuantity,
     removeFromCart,
-    cartMessage
+    cartMessage,
+    productData,
+    productLoading,
+    fetchProducts
   };
 
   return (

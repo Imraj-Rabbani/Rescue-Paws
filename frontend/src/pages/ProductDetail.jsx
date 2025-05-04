@@ -3,53 +3,46 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
-import { getProductById, getAllProducts } from '../services/ProductService';
+import { getProductById } from '../services/ProductService';
 import { AppContext } from '../context/AppContext';
 import '../index.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useContext(AppContext);
+  const { addToCart, productData, productLoading } = useContext(AppContext);
 
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    const fetchProductAndRelated = async () => {
-      try {
-        const current = await getProductById(id);
-        setProduct(current);
-
-        const all = await getAllProducts();
-        const related = all
-          .filter(p => p.id !== id && p.category === current.category)
-          .slice(0, 4);
-
-        // If not enough related, show any others
-        if (related.length < 4) {
-          const fallback = all
-            .filter(p => p.id !== id && !related.includes(p))
-            .slice(0, 4 - related.length);
-          setRelatedProducts([...related, ...fallback]);
-        } else {
-          setRelatedProducts(related);
-        }
-
-      } catch (err) {
-        console.error('Error fetching product details:', err);
-      } finally {
-        setLoading(false);
-      }
+    const fetchProduct = async () => {
+      const data = await getProductById(id);
+      setProduct(data);
     };
 
-    fetchProductAndRelated();
+    fetchProduct();
   }, [id]);
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
-  if (!product) return <div className="p-8 text-red-500 text-center">Product not found</div>;
+  useEffect(() => {
+    if (!product || productLoading) return;
+
+    const related = productData
+      .filter(p => p.id !== id && p.category === product.category)
+      .slice(0, 4);
+
+    if (related.length < 4) {
+      const extra = productData
+        .filter(p => p.id !== id && !related.includes(p))
+        .slice(0, 4 - related.length);
+      setRelatedProducts([...related, ...extra]);
+    } else {
+      setRelatedProducts(related);
+    }
+  }, [product, productData, id, productLoading]);
+
+  if (!product) return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
   const discountedPrice = product.discount
     ? (product.sellingPrice * (1 - product.discount / 100)).toFixed(2)
@@ -64,6 +57,7 @@ const ProductDetail = () => {
       </div>
 
       <div className="container mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
+        {/* Product Image */}
         <div>
           <img
             src={product.imageUrl}
@@ -71,10 +65,11 @@ const ProductDetail = () => {
             className="w-full h-98 object-contain rounded-lg shadow"
           />
           <div className="flex gap-2 mt-4">
-            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20  object-contain  rounded border" />
+            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20 object-contain rounded border" />
           </div>
         </div>
 
+        {/* Product Info */}
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between">
           <div>
             <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
@@ -130,11 +125,11 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Related Products Section */}
+      {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="container mx-auto px-4 py-10">
           <h3 className="text-2xl font-bold text-gray-800 mb-6">Related Products</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map(p => (
               <ProductCard key={p.id} product={p} />
             ))}

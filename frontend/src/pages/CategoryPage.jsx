@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
-import { getAllProducts } from '../services/ProductService';
+import { useContext } from 'react';
+import { AppContext } from '../context/AppContext';
 
 const CategoryPage = () => {
   const { category } = useParams();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { productData, productLoading } = useContext(AppContext);
 
   const categoryTitles = {
     tech: 'Smart Tech',
@@ -18,23 +17,9 @@ const CategoryPage = () => {
     accessories: 'Accessories'
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const all = await getAllProducts();
-        const filtered = all.filter(p =>
-          p.category?.toLowerCase() === category.toLowerCase()
-        );
-        setProducts(filtered);
-      } catch (error) {
-        console.error('Error fetching category products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [category]);
+  const filteredProducts = productData.filter(
+    p => p.category?.toLowerCase() === category.toLowerCase()
+  );
 
   return (
     <div>
@@ -44,11 +29,11 @@ const CategoryPage = () => {
           {categoryTitles[category] || category} Products
         </h2>
 
-        {loading ? (
+        {productLoading ? (
           <p className="text-gray-500">Loading...</p>
-        ) : products.length > 0 ? (
+        ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map(product => (
+            {filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
