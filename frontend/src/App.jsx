@@ -19,6 +19,8 @@ import ProductPage from './components/ProductPage';
 import VolunteerPage from './components/VolunteerPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RevenuePage from './components/RevenuePage';
+import CheckoutPage from './pages/CheckoutPage'; 
+
 
 const App = () => {
   return (
@@ -40,6 +42,7 @@ const App = () => {
         <Route path="/adminvolunteers" element={<VolunteerPage />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/revenue" element={<RevenuePage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
       </Routes>
     </div>
   );

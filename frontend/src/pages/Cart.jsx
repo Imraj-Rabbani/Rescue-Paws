@@ -1,7 +1,6 @@
-// src/pages/Cart.jsx
 import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
 
@@ -13,12 +12,17 @@ const Cart = () => {
   } = useContext(AppContext);
 
   const [donation, setDonation] = useState(0);
+  const navigate = useNavigate();
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.sellingPrice * item.quantity,
     0
   );
   const total = subtotal + donation;
+
+  const handleProceed = () => {
+    navigate('/checkout', { state: { from: 'cart', donation } });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -50,10 +54,15 @@ const Cart = () => {
                       <h3 className="font-bold text-lg">{item.name}</h3>
                       <p className="text-sm text-gray-600">{item.description}</p>
                       <p className="text-sm text-green-600 mt-1">In Stock</p>
-                      <p className="text-sm mt-1 font-bold">
-                        $ {(item.sellingPrice * item.quantity).toFixed(2)}
-                      </p>
+
+                      {/* PetPoints Display */}
+                      <div className="flex items-center gap-2 text-purple-700 font-semibold mt-1">
+                        <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
+                        <span>{(item.sellingPrice * item.quantity).toFixed(2)}</span>
+                        <span>PetPoints</span>
+                      </div>
                     </div>
+
                     <div className="flex items-center gap-3 mt-2">
                       <label>Qty:</label>
                       <select
@@ -90,8 +99,12 @@ const Cart = () => {
             <h3 className="text-xl font-semibold mb-4">
               Subtotal ({cart.length} item{cart.length !== 1 && 's'})
             </h3>
-            <p className="text-md mb-2 text-gray-700">
-              Subtotal: <strong>$ {subtotal.toFixed(2)}</strong>
+
+            {/* PetPoints Subtotal */}
+            <p className="text-md mb-2 text-gray-700 flex items-center gap-2">
+              Subtotal:
+              <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
+              <strong>{subtotal.toFixed(2)} PetPoints</strong>
             </p>
 
             {/* Donation */}
@@ -106,20 +119,27 @@ const Cart = () => {
                 className="w-full border rounded px-3 py-2"
               >
                 <option value={0}>None</option>
-                <option value={10}>$10</option>
-                <option value={20}>$20</option>
-                <option value={50}>$50</option>
+                <option value={10}>10 PetPoints</option>
+                <option value={20}>20 PetPoints</option>
+                <option value={50}>50 PetPoints</option>
               </select>
             </div>
 
             <hr className="my-4" />
 
-            <div className="flex justify-between font-bold text-lg mb-2">
+            {/* Total in PetPoints */}
+            <div className="flex justify-between font-bold text-lg mb-2 items-center">
               <span>Total:</span>
-              <span>$ {total.toFixed(2)}</span>
+              <div className="flex items-center gap-2">
+                <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
+                <span>{total.toFixed(2)} PetPoints</span>
+              </div>
             </div>
 
-            <button className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold">
+            <button
+              onClick={handleProceed}
+              className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold"
+            >
               Proceed to Checkout
             </button>
           </div>
