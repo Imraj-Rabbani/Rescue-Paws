@@ -75,15 +75,13 @@ const ProductDetail = () => {
             <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
             <p className="text-gray-600 mb-4">{product.description}</p>
 
+            {/* PetPoints Display Only */}
             <div className="mb-4">
-              {product.discount ? (
-                <>
-                  <div className="text-2xl font-semibold text-purple-600">$ {discountedPrice}</div>
-                  <div className="text-gray-400 line-through text-sm">$ {product.sellingPrice}</div>
-                </>
-              ) : (
-                <div className="text-2xl font-semibold">$ {product.sellingPrice}</div>
-              )}
+              <div className="flex items-center gap-2 text-purple-600 font-semibold text-xl">
+                <img src="/petpoints.png" alt="PetPoints" className="w-6 h-6" />
+                <span>{discountedPrice}</span>
+                <span>PetPoints</span>
+              </div>
             </div>
 
             <div className="text-green-600 font-medium mb-4">
@@ -114,7 +112,7 @@ const ProductDetail = () => {
               </button>
               <button
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded"
-                onClick={() => navigate('/paynow')}
+                onClick={() => navigate('/checkout', { state: { from: 'buyNow', product } })}
               >
                 Buy Now
               </button>
