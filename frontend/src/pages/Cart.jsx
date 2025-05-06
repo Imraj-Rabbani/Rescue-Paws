@@ -1,18 +1,21 @@
 import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
   const {
     cart,
     updateCartItemQuantity,
-    removeFromCart
+    removeFromCart,
+    isLoggedIn
   } = useContext(AppContext);
 
   const [donation, setDonation] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.sellingPrice * item.quantity,
@@ -21,7 +24,16 @@ const Cart = () => {
   const total = subtotal + donation;
 
   const handleProceed = () => {
-    navigate('/checkout', { state: { from: 'cart', donation } });
+    if (cart.length === 0) {
+      toast.error("🛒 Your cart is empty. Please add items before proceeding.");
+      return;
+    }
+
+    if (!isLoggedIn) {
+      navigate('/login', { state: { from: location.pathname } });
+    } else {
+      navigate('/checkout', { state: { from: 'cart', donation } });
+    }
   };
 
   return (
@@ -55,7 +67,6 @@ const Cart = () => {
                       <p className="text-sm text-gray-600">{item.description}</p>
                       <p className="text-sm text-green-600 mt-1">In Stock</p>
 
-                      {/* PetPoints Display */}
                       <div className="flex items-center gap-2 text-purple-700 font-semibold mt-1">
                         <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
                         <span>{(item.sellingPrice * item.quantity).toFixed(2)}</span>
@@ -94,20 +105,17 @@ const Cart = () => {
 
         {/* Sidebar */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
-          {/* Summary */}
           <div className="bg-white p-6 rounded-lg shadow h-fit">
             <h3 className="text-xl font-semibold mb-4">
               Subtotal ({cart.length} item{cart.length !== 1 && 's'})
             </h3>
 
-            {/* PetPoints Subtotal */}
             <p className="text-md mb-2 text-gray-700 flex items-center gap-2">
               Subtotal:
               <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
               <strong>{subtotal.toFixed(2)} PetPoints</strong>
             </p>
 
-            {/* Donation */}
             <div className="mt-4">
               <label htmlFor="donation" className="block text-sm font-medium mb-1">
                 Optional Donation to Animal Rescues:
@@ -127,7 +135,6 @@ const Cart = () => {
 
             <hr className="my-4" />
 
-            {/* Total in PetPoints */}
             <div className="flex justify-between font-bold text-lg mb-2 items-center">
               <span>Total:</span>
               <div className="flex items-center gap-2">

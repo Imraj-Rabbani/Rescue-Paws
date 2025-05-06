@@ -3,9 +3,10 @@ import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Pages and Components
-import Login from './pages/Login';
+// ✅ Fixed import name here
 import HomePage from './pages/HomePage';
+
+import Login from './pages/Login';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import PayNow from './pages/PayNow';
@@ -19,15 +20,15 @@ import ProductPage from './components/ProductPage';
 import VolunteerPage from './components/VolunteerPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RevenuePage from './components/RevenuePage';
-import CheckoutPage from './pages/CheckoutPage'; 
-
+import CheckoutPage from './pages/CheckoutPage';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
     <div>
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} /> 
         <Route path="/login" element={<Login />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetail />} />

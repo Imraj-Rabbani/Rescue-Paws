@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
@@ -10,20 +10,22 @@ import '../index.css';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart, productData, productLoading } = useContext(AppContext);
+  const location = useLocation();
+  const { addToCart, productData, productLoading, isLoggedIn } = useContext(AppContext);
 
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      const data = await getProductById(id);
-      setProduct(data);
-    };
-
-    fetchProduct();
-  }, [id]);
+    const cachedProduct = productData.find(p => p.id === id);
+    if (cachedProduct) {
+      setProduct(cachedProduct);
+    } else {
+      // fallback only if not found in context
+      getProductById(id).then(data => setProduct(data));
+    }
+  }, [id, productData]);
 
   useEffect(() => {
     if (!product || productLoading) return;
@@ -47,6 +49,14 @@ const ProductDetail = () => {
   const discountedPrice = product.discount
     ? (product.sellingPrice * (1 - product.discount / 100)).toFixed(2)
     : product.sellingPrice.toFixed(2);
+
+  const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { from: location.pathname } });
+    } else {
+      navigate('/checkout', { state: { from: 'buyNow', product } });
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -105,14 +115,13 @@ const ProductDetail = () => {
                 className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded"
                 onClick={() => {
                   addToCart(product, quantity);
-                  alert(`Added ${quantity} item(s) to cart`);
                 }}
               >
                 Add to Cart
               </button>
               <button
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded"
-                onClick={() => navigate('/checkout', { state: { from: 'buyNow', product } })}
+                onClick={handleBuyNow}
               >
                 Buy Now
               </button>
