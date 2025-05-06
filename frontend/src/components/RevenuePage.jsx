@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { ArrowUp, ArrowDown, DollarSign, CalendarDays, Clock, CircleDollarSign, PackageCheck, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, X, DollarSign, CalendarDays, Clock, CircleDollarSign, PackageCheck, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import AdminNavbar from './AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
-
-// --- Helper Components ---
 
 // Reusable Card Component
 const Card = ({ title, children, className, onClick }) => {
@@ -19,23 +17,155 @@ const Card = ({ title, children, className, onClick }) => {
     );
 };
 
-// Calculation Display Component
-const CalculationDisplay = ({ title, calculation, onClose }) => {
+// Calculation Modal
+// Calculation Modal
+const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode }) => {
+    const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
+    const fontWeight = 'font-semibold';
+    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
+    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
+    const totalRowBg = isDarkMode ? 'bg-gray-100 dark:bg-gray-800' : 'bg-[#e4ccb8]';
+    const totalTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+    const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
+    const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
+    const titleColor = isDarkMode ? 'text-gray-200' : 'text-[#A2574F]';
+    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
+    const borderBottomColor = isDarkMode ? 'border-gray-100 dark:border-gray-700' : 'border-gray-100';
+    const modalContentBg = isDarkMode ? 'bg-white dark:bg-gray-800' : 'bg-white';
+
     return (
-        <div className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-md p-6 z-50 max-h-[80vh] overflow-y-auto`}>
-            <h3 className={`text-xl font-semibold mb-4 text-[#A2574F]`}>{title} Calculation</h3>
-            <pre className={`whitespace-pre-wrap break-words text-sm text-gray-700 font-family: 'Arial', sans-serif; line-height: 1.4;`}>
-                {calculation}
-            </pre>
-            <button onClick={onClose} className={`mt-4 px-4 py-2 rounded-md bg-[#e4ccb8] text-[#664C36] hover:bg-[#d1b39d]`}>Close</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+            <div className={`w-[90%] md:w-[600px] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
+                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Product Name</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Date</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Month</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Cost</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Stock Quantity</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Total Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {calculation.productDetails && calculation.productDetails.map((product, index) => (
+                                <tr key={index} className={`${index % 2 === 0 ? rowBgLight : rowBgDark}`}>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.name}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
+                                        {product.productAddDate ? new Date(product.productAddDate).toLocaleDateString() : 'N/A'}
+                                    </td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
+                                        {product.productAddDate ? new Date(product.productAddDate).toLocaleString('en-US', { month: 'long' }) : 'N/A'}
+                                    </td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${product.purchaseCost ? product.purchaseCost.toFixed(2) : '0.00'}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.stockQuantity}</td>
+                                    <td className={`py-2 px-3 text-sm ${fontWeight} ${valueTextColor}`}>${product.totalValue ? product.totalValue.toFixed(2) : '0.00'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan="3" className={`py-2 px-3 text-sm ${fontWeight} ${totalTextColor} text-right`}>Total:</td>
+                                <td className={`py-2 px-3 text-sm ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };
+
+
+const MonthlyInvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode }) => {
+    const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
+    const fontWeight = 'font-semibold';
+    const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
+    const titleColor = isDarkMode ? 'text-gray-200' : 'text-[#A2574F]';
+    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
+    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
+    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+    const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
+    const totalTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+
+    const getMonthName = (monthNumber) => {
+        const date = new Date(2000, monthNumber - 1, 1); 
+        return date.toLocaleString('default', { month: 'long' });
+    };
+
+    const monthName = calculation?.month ? getMonthName(calculation.month) : '';
+    const formattedMonthYear = monthName ? `${monthName}-${calculation?.year}` : '';
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+            <div className={`w-[90%] md:w-[600px] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
+                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <h4 className={`text-lg ${textColor} ${fontWeight} mb-2`}>
+                        Month: {formattedMonthYear}
+                    </h4>
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Product Name</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Date</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Cost</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Stock Quantity</th>
+                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Total Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {calculation?.productDetails?.map((product, index) => (
+                                <tr key={index} className={`${index % 2 === 0 ? rowBgLight : rowBgDark}`}>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.name}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(product.productAddDate).toLocaleDateString()}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${product.purchaseCost ? product.purchaseCost.toFixed(2) : '0.00'}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.stockQuantity}</td>
+                                    <td className={`py-2 px-3 text-sm ${fontWeight} ${valueTextColor}`}>${product.totalValue ? product.totalValue.toFixed(2) : '0.00'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan="4" className={`py-2 px-3 text-sm ${fontWeight} ${totalTextColor} text-right`}>Total:</td>
+                                <td className={`py-2 px-3 text-sm ${fontWeight} ${totalTextColor}`}>${calculation?.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+
 
 const RevenuePage = () => {
     const { isDarkMode } = useContext(DarkmodeContext);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('Revenue');
+    const [monthlyPurchaseCostData, setMonthlyPurchaseCostData] = useState(null);
+    const [monthlyInvestmentDetails, setMonthlyInvestmentDetails] = useState(null);
+    const [loadingMonthlyInvestmentDetails, setLoadingMonthlyInvestmentDetails] = useState(true);
+    const [errorMonthlyInvestmentDetails, setErrorMonthlyInvestmentDetails] = useState(null);
+    const [loadingMonthlyPurchaseCost, setLoadingMonthlyPurchaseCost] = useState(true);
+    const [errorMonthlyPurchaseCost, setErrorMonthlyPurchaseCost] = useState(null);
     const [orders, setOrders] = useState([
         { id: 1, date: '2025-04-15', items: 2, revenue: 25.00, cost: 15.00, status: 'Delivered' },
         { id: 2, date: '2025-04-16', items: 1, revenue: 12.50, cost: 7.50, status: 'Processing' },
@@ -47,7 +177,83 @@ const RevenuePage = () => {
     ]);
 
     const [showCalculation, setShowCalculation] = useState(null);
-    const [calculationDetails, setCalculationDetails] = useState('');
+    const [calculationDetails, setCalculationDetails] = useState({ productDetails: [], totalPurchaseValue: 0 });
+    const [totalPurchaseValue, setTotalPurchaseValue] = useState(null);
+    const [productPurchaseDetails, setProductPurchaseDetails] = useState([]);
+    const [loadingTotalPurchaseValue, setLoadingTotalPurchaseValue] = useState(true);
+    const [errorTotalPurchaseValue, setErrorTotalPurchaseValue] = useState(null);
+
+    useEffect(() => {
+        const fetchTotalPurchaseValueDetails = async () => {
+            setLoadingTotalPurchaseValue(true);
+            setErrorTotalPurchaseValue(null);
+            try {
+                const response = await fetch('http://localhost:4000/api/products/total-purchase-value/details');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setTotalPurchaseValue(data.totalPurchaseValue);
+                setProductPurchaseDetails(data.productDetails);
+                setCalculationDetails(data);
+            } catch (error) {
+                console.error('Error fetching total purchase value details:', error);
+                setErrorTotalPurchaseValue('Failed to fetch total purchase value details.');
+            } finally {
+                setLoadingTotalPurchaseValue(false);
+            }
+        };
+
+        const fetchMonthlyPurchaseCost = async () => {
+            setLoadingMonthlyPurchaseCost(true);
+            setErrorMonthlyPurchaseCost(null);
+
+            try {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+
+                const response = await fetch(`http://localhost:4000/api/products/monthly-purchase-cost?year=${year}&month=${month}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setMonthlyPurchaseCostData(data);
+            } catch (error) {
+                console.error('Error fetching monthly purchase cost:', error);
+                setErrorMonthlyPurchaseCost('Failed to fetch monthly purchase cost.');
+            } finally {
+                setLoadingMonthlyPurchaseCost(false);
+            }
+        };
+
+        const fetchDetailedMonthlyPurchaseCost = async () => {
+            setLoadingMonthlyInvestmentDetails(true);
+            setErrorMonthlyInvestmentDetails(null);
+
+            try {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+
+                const response = await fetch(`http://localhost:4000/api/products/monthly-purchase-cost/details?year=${year}&month=${month}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setMonthlyInvestmentDetails(data);
+            } catch (error) {
+                console.error('Error fetching detailed monthly purchase cost:', error);
+                setErrorMonthlyInvestmentDetails('Failed to fetch detailed monthly purchase cost.');
+            } finally {
+                setLoadingMonthlyInvestmentDetails(false);
+            }
+        };
+        fetchTotalPurchaseValueDetails();
+        fetchMonthlyPurchaseCost();
+        fetchDetailedMonthlyPurchaseCost()
+    }, []);
 
     const totalRevenue = orders.reduce((sum, order) => sum + order.revenue, 0);
     const totalProfit = orders.reduce((sum, order) => sum + (order.revenue - order.cost), 0);
@@ -66,7 +272,8 @@ const RevenuePage = () => {
         const orderDate = new Date(order.date);
         return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
     });
-    const monthlyRevenue = monthlyOrders.reduce((sum, order) => sum + order.revenue, 0);
+
+    const monthlyInvestment = monthlyOrders.reduce((sum, order) => sum + order.revenue, 0);
     const monthlyProfit = monthlyOrders.reduce((sum, order) => sum + (order.revenue - order.cost), 0);
 
     const weeklyOrders = orders.filter(order => {
@@ -85,53 +292,14 @@ const RevenuePage = () => {
 
     const handleCardClick = (title) => {
         setShowCalculation(title);
-        let details = '';
-        switch (title) {
-            case 'Total Revenue':
-                details = orders.map(order => `Order ID: ${order.id}\nRevenue: $${order.revenue.toFixed(2)}`).join('\n\n');
-                details += `\n\n--------------------\nTotal Revenue = $${totalRevenue.toFixed(2)}`;
-                break;
-            case 'Total Profit':
-                details = orders.map(order => `Order ID: ${order.id}\nRevenue: $${order.revenue.toFixed(2)}\nCost: $${order.cost.toFixed(2)}\nProfit: $${(order.revenue - order.cost).toFixed(2)}`).join('\n\n');
-                details += `\n\n--------------------\nTotal Profit = $${totalProfit.toFixed(2)}`;
-                break;
-            case 'Monthly Revenue':
-                details = monthlyOrders.map(order => `Order ID: ${order.id}\nDate: ${order.date}\nRevenue: $${order.revenue.toFixed(2)}`).join('\n\n');
-                details += `\n\n--------------------\nMonthly Revenue (April 2025) = $${monthlyRevenue.toFixed(2)}`;
-                break;
-            case 'Monthly Profit':
-                details = monthlyOrders.map(order => `Order ID: ${order.id}\nDate: ${order.date}\nRevenue: $${order.revenue.toFixed(2)}\nCost: $${order.cost.toFixed(2)}\nProfit: $${(order.revenue - order.cost).toFixed(2)}`).join('\n\n');
-                details += `\n\n--------------------\nMonthly Profit (April 2025) = $${monthlyProfit.toFixed(2)}`;
-                break;
-            case 'Weekly Revenue':
-                details = weeklyOrders.map(order => `Order ID: ${order.id}\nDate: ${order.date}\nRevenue: $${order.revenue.toFixed(2)}`).join('\n\n');
-                details += `\n\n--------------------\nWeekly Revenue (starting Sunday) = $${weeklyRevenue.toFixed(2)}`;
-                break;
-            case 'Weekly Profit':
-                details = weeklyOrders.map(order => `Order ID: ${order.id}\nDate: ${order.date}\nRevenue: $${order.revenue.toFixed(2)}\nCost: $${order.cost.toFixed(2)}\nProfit: $${(order.revenue - order.cost).toFixed(2)}`).join('\n\n');
-                details += `\n\n--------------------\nWeekly Profit (starting Sunday) = $${weeklyProfit.toFixed(2)}`;
-                break;
-            case 'Average Order Value':
-                details = `Total Revenue: $${totalRevenue.toFixed(2)}\nTotal Orders: ${totalOrdersCount}\n\n--------------------\nAverage Order Value = $<span class="math-inline">\{averageOrderValue\.toFixed\(2\)\} \(</span>{totalRevenue.toFixed(2)} / ${totalOrdersCount})`;
-                break;
-            case 'Total Orders':
-                details = orders.map(order => `Order ID: ${order.id}\nDate: ${order.date}`).join('\n\n');
-                details += `\n\n--------------------\nTotal Orders = ${totalOrdersCount}`;
-                break;
-            default:
-                details = '';
-        }
-        setCalculationDetails(details);
     };
 
     const handleCloseCalculation = () => {
         setShowCalculation(null);
-        setCalculationDetails('');
     };
 
     return (
         <div className={`flex min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-[#F5F5F5]'}`}>
-            {/* Sidebar */}
             <AdminNavbar
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}
@@ -139,17 +307,22 @@ const RevenuePage = () => {
                 setActiveTab={setActiveTab}
             />
 
-            {/* Main Content Area */}
             <div className="flex-1 p-6">
                 <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-white' : 'text-[#64332d]'} mb-8`}><u>Revenue & Profit Overview</u></h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card title="Total Revenue" onClick={() => handleCardClick("Total Revenue")}>
+                    <Card title="Total Investment" onClick={() => handleCardClick("Total Investment")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${totalRevenue.toFixed(2)}</p>
+                            {loadingTotalPurchaseValue ? (
+                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>Loading...</p>
+                            ) : errorTotalPurchaseValue ? (
+                                <p className={`text-red-500`}>{errorTotalPurchaseValue}</p>
+                            ) : (
+                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${totalPurchaseValue ? totalPurchaseValue.toFixed(2) : '0.00'}</p>
+                            )}
                         </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total earnings from all orders.</p>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total purchase value of all products in stock.</p>
                     </Card>
                     <Card title="Total Profit" onClick={() => handleCardClick("Total Profit")}>
                         <div className="flex items-center justify-center">
@@ -158,17 +331,23 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total profit after deducting costs.</p>
                     </Card>
-                    <Card title="Monthly Revenue" onClick={() => handleCardClick("Monthly Revenue")}>
+                    <Card title="Monthly Investment" onClick={() => handleCardClick("Monthly Investment")}>
                         <div className="flex items-center justify-center">
                             <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${monthlyRevenue.toFixed(2)}</p>
+                            {loadingMonthlyPurchaseCost ? (
+                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>Loading...</p>
+                            ) : errorMonthlyPurchaseCost ? (
+                                <p className={`text-red-500`}>{errorMonthlyPurchaseCost}</p>
+                            ) : (
+                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${monthlyPurchaseCostData?.monthlyPurchaseCost ? monthlyPurchaseCostData.monthlyPurchaseCost.toFixed(2) : '0.00'}</p>
+                            )}
                         </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Revenue for the current month (April 2025).</p>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total purchase cost for the current month ({new Date().toLocaleString('default', { month: 'long' })}).</p>
                     </Card>
                     <Card title="Monthly Profit" onClick={() => handleCardClick("Monthly Profit")}>
                         <div className="flex items-center justify-center">
                             <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${monthlyProfit.toFixed(2)}</p>
+                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>{monthlyProfit.toFixed(2)}</p>
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Profit for the current month (April 2025).</p>
                     </Card>
@@ -204,18 +383,117 @@ const RevenuePage = () => {
                     </Card>
                 </div>
 
-                {showCalculation && (
-                    <CalculationDisplay
-                        title={showCalculation}
+                {showCalculation === 'Total Investment' && (
+                    <InvestmentCalculationDisplay title="Total Investment History"
                         calculation={calculationDetails}
                         onClose={handleCloseCalculation}
                     />
                 )}
 
-                {/* New Section: Revenue Trends (Growth Removed) */}
-                
-                {/* You could add other relevant financial insights here */}
-                {/* For example, top performing products, payment method statistics, etc. */}
+                {showCalculation === 'Total Profit' && (
+                    <InvestmentCalculationDisplay
+                        title="Total Profit Calculation"
+                        calculation={{
+                            productDetails: orders.map(o => ({
+                                name: `Order ID: ${o.id}`,
+                                purchaseCost: o.cost,
+                                stockQuantity: 1,
+                                totalValue: o.revenue - o.cost,
+                            })),
+                            totalPurchaseValue: totalProfit,
+                        }}
+                        onClose={handleCloseCalculation}
+                    />
+                )}
+
+                {showCalculation === 'Monthly Investment' && (
+                    <MonthlyInvestmentCalculationDisplay
+                        title="Monthly Investment History"
+                        calculation={monthlyInvestmentDetails}
+                        onClose={handleCloseCalculation}
+                        isDarkMode={isDarkMode}
+                    />
+                )}
+
+                {showCalculation === 'Monthly Profit' && (
+                    <InvestmentCalculationDisplay
+                        title="Monthly Profit Calculation"
+                        calculation={{
+                            productDetails: monthlyOrders.map(o => ({
+                                name: `Order ID: ${o.id}`,
+                                purchaseCost: o.cost,
+                                stockQuantity: 1,
+                                totalValue: o.revenue - o.cost,
+                            })),
+                            totalPurchaseValue: monthlyProfit,
+                        }}
+                        onClose={handleCloseCalculation}
+                    />
+                )}
+
+                {showCalculation === 'Weekly Revenue' && (
+                    <InvestmentCalculationDisplay
+                        title="Weekly Reven"
+                        calculation={{
+                            productDetails: weeklyOrders.map(o => ({
+                                name: `Order ID: ${o.id}`,
+                                purchaseCost: 0,
+                                stockQuantity: 1,
+                                totalValue: o.revenue,
+                            })),
+                            totalPurchaseValue: weeklyRevenue,
+                        }}
+                        onClose={handleCloseCalculation}
+                    />
+                )}
+
+                {showCalculation === 'Weekly Profit' && (
+                    <InvestmentCalculationDisplay
+                        title="Weekly Profit Calculation"
+                        calculation={{
+                            productDetails: weeklyOrders.map(o => ({
+                                name: `Order ID: ${o.id}`,
+                                purchaseCost: o.cost,
+                                stockQuantity: 1,
+                                totalValue: o.revenue - o.cost,
+                            })),
+                            totalPurchaseValue: weeklyProfit,
+                        }}
+                        onClose={handleCloseCalculation}
+                    />
+                )}
+
+                {showCalculation === 'Average Order Value' && (
+                    <InvestmentCalculationDisplay
+                        title="Average Order Value Calculation"
+                        calculation={{
+                            productDetails: [
+                                { name: 'Total Investment', purchaseCost: 0, stockQuantity: 1, totalValue: totalRevenue },
+                                { name: 'Total Orders', purchaseCost: 0, stockQuantity: 1, totalValue: totalOrdersCount },
+                                { name: 'Average Order Value', purchaseCost: 0, stockQuantity: 1, totalValue: averageOrderValue },
+                            ],
+                            totalPurchaseValue: averageOrderValue,
+                        }}
+                        onClose={handleCloseCalculation}
+                    />
+                )}
+
+                {showCalculation === 'Total Orders' && (
+                    <InvestmentCalculationDisplay
+                        title="Total Orders Calculation"
+                        calculation={{
+                            productDetails: orders.map(o => ({
+                                name: `Order ID: ${o.id}`,
+                                purchaseCost: 0,
+                                stockQuantity: 1,
+                                totalValue: 1,
+                            })),
+                            totalPurchaseValue: totalOrdersCount,
+                        }}
+                        onClose={handleCloseCalculation}
+                    />
+                )}
+
 
             </div>
         </div>
