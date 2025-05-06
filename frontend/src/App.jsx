@@ -20,6 +20,7 @@ import ProductPage from './components/ProductPage';
 import VolunteerPage from './components/VolunteerPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RevenuePage from './components/RevenuePage';
+import VolunteerProfile from './pages/VolunteerProfile';
 import CheckoutPage from './pages/CheckoutPage';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -42,6 +43,8 @@ const App = () => {
         <Route path="/adminproducts" element={<ProductPage />} />
         <Route path="/adminvolunteers" element={<VolunteerPage />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
+        <Route path="/revenue" element={<RevenuePage />} />
+        <Route path="/volunteers/:id" element={<VolunteerProfile />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/adminrevenue" element={<RevenuePage />} />
       </Routes>
