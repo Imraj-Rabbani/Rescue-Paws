@@ -42,17 +42,17 @@ export default function ProductNavbar() {
         credentials: 'include',
       });
 
-      // ✅ Clear cart in memory
+      
       resetCart();
 
-      // ✅ Optionally remove stored cart for security
+      
       localStorage.removeItem('cart');
 
-      // ✅ Remove auth-related keys if any
+      
       localStorage.removeItem('token');
       localStorage.removeItem('userData');
 
-      // ✅ Full reload
+      
       window.location.href = '/login';
     } catch (err) {
       console.error('Logout failed', err);

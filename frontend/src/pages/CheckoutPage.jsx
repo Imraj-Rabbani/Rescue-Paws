@@ -73,7 +73,7 @@ const CheckoutPage = () => {
       toast.dismiss();
     
       if ((response.status === 200 || response.status === 201) && response.data.success) {
-        toast.success('✅ Order placed successfully!');
+        toast.success(' Order placed successfully!');
         setCart([]);
         setTimeout(() => navigate('/products'), 2000);
       } else {
