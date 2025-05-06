@@ -9,10 +9,11 @@ const productSchema = new mongoose.Schema({
   imageUrl: { type: String },
   stockQuantity: { type: Number, default: 0 },
   category: { type: String, default: 'uncategorized' },
-  features: { type: [String] }, // merged from main
-  productAddDate: { type: Date, default: Date.now } // merged from main
+  features: { type: [String] },
+  productAddDate: { type: Date, default: Date.now }
 });
 
 const Product = mongoose.model('Product', productSchema, 'products');
 
 export default Product;
+
