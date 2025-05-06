@@ -1,5 +1,4 @@
 import userModel from '../models/userModel.js';
-// import RescueImage from '../models/rescueImageModel.js';
 import RescueImage from '../models/imageModel.js';
 
 export const volunteers = async (req, res) => {
@@ -74,5 +73,31 @@ export const getTopVolunteers = async (req, res) => {
     res.status(200).json(topVolunteers);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch top volunteers', error });
+  }
+};
+
+
+
+export const donateToVolunteer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { bkashNumber, amount } = req.body;
+
+    if (!bkashNumber || !amount) {
+      return res.status(400).json({ message: 'Bkash number and amount are required.' });
+    }
+
+    const volunteer = await userModel.findById(id);
+    if (!volunteer || volunteer.role !== 'volunteer') {
+      return res.status(404).json({ message: 'Volunteer not found.' });
+    }
+
+    volunteer.points += Number(amount);
+    await volunteer.save();
+
+    res.status(200).json({ message: 'Donation successful', updatedPoints: volunteer.points });
+  } catch (err) {
+    console.error('Donate Error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
