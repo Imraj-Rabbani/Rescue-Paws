@@ -1,4 +1,3 @@
-// backend/models/ProductModel.js
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
@@ -9,7 +8,9 @@ const productSchema = new mongoose.Schema({
   sellingPrice: { type: Number, required: true, default: 0 },
   imageUrl: { type: String },
   stockQuantity: { type: Number, default: 0 },
-  category: { type: String, default: 'uncategorized' }
+  category: { type: String, default: 'uncategorized' },
+  features: { type: [String] }, // merged from main
+  productAddDate: { type: Date, default: Date.now } // merged from main
 });
 
 const Product = mongoose.model('Product', productSchema, 'products');
