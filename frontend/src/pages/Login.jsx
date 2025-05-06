@@ -1,13 +1,15 @@
-import React, { useContext } from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useContext, useState } from "react";
+import { useNavigate, useLocation } from "react-router"; // ✅ Updated import
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ Get location state
   const { backendUrl, setIsLoggedIn, checkAuthStatus } = useContext(AppContext);
+
+  const redirectPath = location.state?.from || "/"; // ✅ Only added this
 
   const [state, setState] = useState("Sign Up");
   const [loginData, setLoginData] = useState({
@@ -77,8 +79,10 @@ const Login = () => {
         );
         setIsLoggedIn(true);
         checkAuthStatus();
-        navigate("/");
-        // Reset form data after successful submission
+
+        // ✅ Updated: redirect to original page after login/signup
+        navigate(redirectPath, { replace: true });
+
         if (type === "Login") {
           setLoginData({ email: "", password: "" });
         } else {
@@ -110,7 +114,6 @@ const Login = () => {
   const handleRegisterSubmit = (e) => handleAuthSubmit(e, "Sign Up");
 
   return (
-
     <div className="min-h-screen flex items-center justify-center py-6 bg-[url('new_background.png')] bg-cover bg-center">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
         <div className="header mb-8 text-center">

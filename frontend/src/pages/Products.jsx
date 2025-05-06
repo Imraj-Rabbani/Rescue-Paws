@@ -1,5 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import { useContext, useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
@@ -7,35 +6,25 @@ import SimpleCarousel from '../components/SimpleCarousel';
 import { AppContext } from '../context/AppContext';
 
 const Products = () => {
-  const { backendUrl } = useContext(AppContext);
-  const [products, setProducts] = useState([]);
+  const { productData, productLoading, fetchProducts } = useContext(AppContext);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
 
   const itemsPerPage = 12;
-
   const categories = ['all', 'tech', 'food', 'toys', 'health', 'accessories'];
 
+  // Prevent redundant fetching on refresh
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${backendUrl}/api/products`);
-        setProducts(res.data);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [backendUrl]);
+    if (productData.length === 0) {
+      fetchProducts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredProducts =
     selectedCategory === 'all'
-      ? products
-      : products.filter(p => p.category?.toLowerCase() === selectedCategory);
+      ? productData
+      : productData.filter(p => p.category?.toLowerCase() === selectedCategory);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const indexOfLast = currentPage * itemsPerPage;
@@ -44,7 +33,7 @@ const Products = () => {
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // reset to page 1
+    setCurrentPage(1);
   };
 
   return (
@@ -55,7 +44,7 @@ const Products = () => {
       <div className="container mx-auto px-6 py-12">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">All Products</h1>
 
-        {/* ✅ Category Buttons */}
+        {/* Category Buttons */}
         <div className="flex flex-wrap gap-3 mb-8">
           {categories.map(cat => (
             <button
@@ -71,8 +60,8 @@ const Products = () => {
         </div>
 
         {/* Product Grid */}
-        {loading ? (
-          <p>Loading...</p>
+        {productLoading ? (
+          <p className="text-center text-gray-500">Loading...</p>
         ) : currentProducts.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -111,7 +100,7 @@ const Products = () => {
             </div>
           </>
         ) : (
-          <p className="text-gray-500">No products found in this category.</p>
+          <p className="text-gray-500 text-center">No products found in this category.</p>
         )}
       </div>
 
