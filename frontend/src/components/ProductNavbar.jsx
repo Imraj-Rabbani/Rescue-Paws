@@ -9,7 +9,7 @@ export default function ProductNavbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { searchTerm, setSearchTerm } = useSearch();
-  const { cart, isLoggedIn, userData, backendUrl } = useContext(AppContext);
+  const { cart, isLoggedIn, userData, backendUrl, resetCart } = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -41,7 +41,18 @@ export default function ProductNavbar() {
         method: 'POST',
         credentials: 'include',
       });
-      localStorage.clear();
+
+      // ✅ Clear cart in memory
+      resetCart();
+
+      // ✅ Optionally remove stored cart for security
+      localStorage.removeItem('cart');
+
+      // ✅ Remove auth-related keys if any
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+
+      // ✅ Full reload
       window.location.href = '/login';
     } catch (err) {
       console.error('Logout failed', err);
@@ -50,23 +61,18 @@ export default function ProductNavbar() {
 
   return (
     <>
-      {/* Promo Bar */}
       <div className="bg-[Cornsilk] text-black text-center py-2 px-4 text-sm">
         ✨ Premium pet products with 10% donated to animal rescues ✨
       </div>
 
-      {/* Navbar */}
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4">
-          {/* Top Row */}
           <div className="flex items-center justify-between py-3">
-            {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
               <img src="/logo_new.png" alt="STRAY PAWS" className="h-10" />
               <span className="text-2xl font-bold hidden sm:block">STRAY PAWS</span>
             </Link>
 
-            {/* Desktop Search */}
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 mx-8 max-w-xl">
               <div className="relative w-full">
                 <input
@@ -82,14 +88,11 @@ export default function ProductNavbar() {
               </div>
             </form>
 
-            {/* Icons */}
             <div className="flex items-center space-x-5">
-              {/* Mobile search icon */}
               <button onClick={() => setSearchOpen(!searchOpen)} className="md:hidden text-gray-700">
                 <FiSearch className="h-6 w-6" />
               </button>
 
-              {/* User dropdown */}
               {isLoggedIn ? (
                 <div className="relative hidden md:block" ref={userMenuRef}>
                   <button
@@ -123,7 +126,6 @@ export default function ProductNavbar() {
                 </Link>
               )}
 
-              {/* Cart */}
               <div className="relative">
                 <Link to="/cart" className="text-gray-700 hover:text-purple-600">
                   <FiShoppingCart className="h-6 w-6" />
@@ -135,14 +137,12 @@ export default function ProductNavbar() {
                 )}
               </div>
 
-              {/* Mobile menu toggle */}
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden text-gray-700">
                 <FiMenu className="h-6 w-6" />
               </button>
             </div>
           </div>
 
-          {/* Mobile Search */}
           {searchOpen && (
             <form onSubmit={handleSearch} className="md:hidden mb-3 px-4">
               <div className="relative">
@@ -160,7 +160,6 @@ export default function ProductNavbar() {
             </form>
           )}
 
-          {/* Desktop Category Navigation */}
           <div className="hidden md:flex space-x-6 py-3 border-t border-gray-100">
             <Link to="/products" className="text-purple-600 font-medium flex items-center">
               <span className="mr-1">🏠</span> All Products
@@ -179,7 +178,6 @@ export default function ProductNavbar() {
             </Link>
           </div>
 
-          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-3 border-t border-gray-100">
               <div className="flex flex-col space-y-3">
