@@ -41,11 +41,14 @@ const App = () => {
         <Route path="/adminproducts" element={<ProductPage />} />
         <Route path="/adminvolunteers" element={<VolunteerPage />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
-        <Route path="/revenue" element={<RevenuePage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/adminrevenue" element={<RevenuePage />} />
       </Routes>
     </div>
   );
 };
+
+
+
 
 export default App;
