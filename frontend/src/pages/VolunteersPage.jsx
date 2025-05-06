@@ -147,7 +147,7 @@ export default function VolunteersPage() {
                         <div className="p-6">
                           <div className="flex items-start space-x-4">
                             <img
-                              src={user.imageUrl || `https://i.pravatar.cc/150?u=${user._id}`}
+                              src="/profilePhoto.jpeg"
                               alt={user.name}
                               className="w-16 h-16 rounded-full object-cover border-2 border-blue-100"
                             />

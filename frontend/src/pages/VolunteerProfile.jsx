@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const VolunteerProfile = () => {
   const { id } = useParams();
@@ -31,6 +32,7 @@ const VolunteerProfile = () => {
         }
 
         const data = await response.json();
+        console.log(data)
         setProfile(data.volunteer);
         setRescueImages(data.rescueImages);
         setTotalPages(data.totalPages);
@@ -69,6 +71,8 @@ const VolunteerProfile = () => {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="container mx-auto my-8 px-4 max-w-6xl">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Volunteer Profile Card */}
@@ -76,7 +80,7 @@ const VolunteerProfile = () => {
           <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
             <div className="flex flex-col items-center">
               <img
-                src={profile.imageUrl || '/default-profile.jpg'}
+                src="/profilePhoto.jpeg"
                 alt={profile.name}
                 className="rounded-full w-36 h-36 object-cover border-4 border-white shadow-md mb-4"
               />
@@ -85,7 +89,7 @@ const VolunteerProfile = () => {
               
               <div className="mb-4">
                 <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">
-                  {profile.points} Rescue Points
+                  Balance: {profile.points}
                 </span>
               </div>
               
@@ -97,7 +101,7 @@ const VolunteerProfile = () => {
                 onClick={() => navigate(`/contact/${id}`)}
                 className="px-4 py-2 border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50 transition-colors"
               >
-                Contact Volunteer
+                Invite to team
               </button>
             </div>
           </div>
@@ -116,8 +120,9 @@ const VolunteerProfile = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rescueImages.map((image) => (
                   <div key={image._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    {console.log(`http://localhost:4000/ ${image.imageUrl}`)}
                     <img
-                      src={image.imageUrl}
+                      src={`http://localhost:4000${image.imageUrl}`}
                       alt="Rescued animal"
                       className="w-full h-48 object-cover"
                     />
@@ -169,6 +174,8 @@ const VolunteerProfile = () => {
         </div>
       </div>
     </div>
+    </>
+
   );
 };
 
