@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config"
 import cookieParser from "cookie-parser";
-
 import connectDB from "./config/mongodb.js";
 import authRouter from './routes/authRoutes.js'
 import userRouter from "./routes/userRoutes.js";

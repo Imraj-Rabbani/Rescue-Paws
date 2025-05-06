@@ -2,7 +2,6 @@
 import React, { useState, createContext, useEffect } from 'react';
 
 export const DarkmodeContext = createContext(); 
-
 export const DarkmodeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const storedTheme = localStorage.getItem('theme');
