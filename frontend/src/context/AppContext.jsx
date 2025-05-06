@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext } from "react";
 import axios from "axios";
+import { toast } from 'react-toastify';
 
 export const AppContext = createContext();
 
@@ -9,33 +10,64 @@ export const AppContextProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [cart, setCart] = useState([]);
-  const [cartMessage, setCartMessage] = useState(null); // message to show temporary cart action
+  const [authChecked, setAuthChecked] = useState(false);
 
-  // ✅ Check login status on load
+  const [productData, setProductData] = useState([]);
+  const [productLoading, setProductLoading] = useState(true);
+
+  axios.defaults.withCredentials = true;
+
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get(`${backendUrl}/api/auth/status`, {
-        withCredentials: true
+      const res = await axios.get(`${backendUrl}/api/auth/status`, {
+        withCredentials: true,
       });
-      if (response.data.success) {
+      if (res.data.success) {
         setIsLoggedIn(true);
-        setUserData(response.data.user);
-      }
-    } catch (error) {
-        console.error("Auth check failed:", error); // now 'error' is used
+        setUserData(res.data.user);
+      } else {
         setIsLoggedIn(false);
         setUserData(null);
       }
+    } catch (error) {
+      setIsLoggedIn(false);
+      setUserData(null);
+      console.error("Auth check failed:", error);
+    } finally {
+      setAuthChecked(true);
+    }
+  };
+
+  const fetchProducts = async () => {
+    if (productData.length > 0) return;
+    setProductLoading(true);
+    try {
+      const cached = localStorage.getItem("productDataCache");
+      const expiry = localStorage.getItem("productDataExpiry");
+      const now = Date.now();
+
+      if (cached && expiry && now < parseInt(expiry)) {
+        setProductData(JSON.parse(cached));
+      } else {
+        const res = await axios.get(`${backendUrl}/api/products`);
+        setProductData(res.data);
+        localStorage.setItem("productDataCache", JSON.stringify(res.data));
+        localStorage.setItem("productDataExpiry", (now + 10 * 60 * 1000).toString());
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setProductLoading(false);
+    }
   };
 
   useEffect(() => {
     checkAuthStatus();
+    fetchProducts();
   }, []);
 
-  // ✅ Add to Cart with visual feedback
   const addToCart = (product, quantity = 1) => {
     const exists = cart.find(item => item.id === product.id);
-
     if (exists) {
       setCart(cart.map(item =>
         item.id === product.id
@@ -46,18 +78,18 @@ export const AppContextProvider = (props) => {
       setCart([...cart, { ...product, quantity }]);
     }
 
-    setCartMessage(`${product.name} added to cart`);
-    setTimeout(() => setCartMessage(null), 2000); // Message clears after 2 seconds
+    toast.success(`🛒 ${product.name} added to cart`, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+      pauseOnHover: false,
+    });
   };
 
-  // ✅ Update Cart Quantity
   const updateCartItemQuantity = (id, quantity) => {
-    setCart(cart.map(item =>
-      item.id === id ? { ...item, quantity } : item
-    ));
+    setCart(cart.map(item => item.id === id ? { ...item, quantity } : item));
   };
 
-  // ✅ Remove Item from Cart
   const removeFromCart = (id) => {
     setCart(cart.filter(item => item.id !== id));
   };
@@ -70,15 +102,18 @@ export const AppContextProvider = (props) => {
     setUserData,
     checkAuthStatus,
     cart,
+    setCart,
     addToCart,
     updateCartItemQuantity,
     removeFromCart,
-    cartMessage
+    productData,
+    productLoading,
+    fetchProducts
   };
 
   return (
     <AppContext.Provider value={value}>
-      {props.children}
+      {authChecked ? props.children : <div className="text-center py-10 text-gray-500">Loading...</div>}
     </AppContext.Provider>
   );
 };
