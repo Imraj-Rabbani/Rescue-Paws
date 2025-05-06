@@ -13,11 +13,13 @@ const Products = () => {
   const itemsPerPage = 12;
   const categories = ['all', 'tech', 'food', 'toys', 'health', 'accessories'];
 
+  // Prevent redundant fetching on refresh
   useEffect(() => {
-    if (!productData || productData.length === 0) {
+    if (productData.length === 0) {
       fetchProducts();
     }
-  }, [fetchProducts, productData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredProducts =
     selectedCategory === 'all'

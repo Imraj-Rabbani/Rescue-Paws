@@ -14,7 +14,7 @@ const ProductCard = ({ product }) => {
   const handleAddToCart = (e) => {
     e.stopPropagation();
     addToCart(product, 1);
-    alert(`${product.name} has been added to your cart.`);
+    
   };
 
   return (
