@@ -66,9 +66,9 @@ export default function Navbar() {
             <a
               href="#"
               className="hover:underline"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/volunteers")}
             >
-              Analytics
+              Volunteers
             </a>
           </li>
         )}

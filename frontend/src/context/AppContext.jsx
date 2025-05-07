@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext } from "react";
 import axios from "axios";
+import { toast } from 'react-toastify';
 
 export const AppContext = createContext();
 
@@ -9,11 +10,13 @@ export const AppContextProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [cart, setCart] = useState([]);
-  const [cartMessage, setCartMessage] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [showCartRestorePrompt, setShowCartRestorePrompt] = useState(false);
 
-  // NEW: Product caching
   const [productData, setProductData] = useState([]);
   const [productLoading, setProductLoading] = useState(true);
+
+  axios.defaults.withCredentials = true;
 
   const checkAuthStatus = async () => {
     try {
@@ -23,19 +26,35 @@ export const AppContextProvider = (props) => {
       if (res.data.success) {
         setIsLoggedIn(true);
         setUserData(res.data.user);
+      } else {
+        setIsLoggedIn(false);
+        setUserData(null);
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
       setIsLoggedIn(false);
       setUserData(null);
+      console.error("Auth check failed:", error);
+    } finally {
+      setAuthChecked(true);
     }
   };
 
   const fetchProducts = async () => {
+    if (productData.length > 0) return;
     setProductLoading(true);
     try {
-      const res = await axios.get(`${backendUrl}/api/products`);
-      setProductData(res.data);
+      const cached = localStorage.getItem("productDataCache");
+      const expiry = localStorage.getItem("productDataExpiry");
+      const now = Date.now();
+
+      if (cached && expiry && now < parseInt(expiry)) {
+        setProductData(JSON.parse(cached));
+      } else {
+        const res = await axios.get(`${backendUrl}/api/products`);
+        setProductData(res.data);
+        localStorage.setItem("productDataCache", JSON.stringify(res.data));
+        localStorage.setItem("productDataExpiry", (now + 10 * 60 * 1000).toString());
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -46,7 +65,73 @@ export const AppContextProvider = (props) => {
   useEffect(() => {
     checkAuthStatus();
     fetchProducts();
+
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (err) {
+        console.error("Failed to parse local cart:", err);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    const syncCartWithBackend = async () => {
+      if (isLoggedIn && userData) {
+        const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+        if (localCart.length > 0) {
+          setShowCartRestorePrompt(true);
+          return;
+        }
+
+        try {
+          const res = await axios.get(`${backendUrl}/api/users/cart`, {
+            withCredentials: true,
+          });
+          setCart(res.data || []);
+        } catch (err) {
+          console.error("Failed to load backend cart:", err);
+        }
+      }
+    };
+
+    syncCartWithBackend();
+  }, [isLoggedIn, userData, backendUrl]);
+
+  const restoreCartFromLocal = async () => {
+    try {
+      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+      const res = await axios.get(`${backendUrl}/api/users/cart`, { withCredentials: true });
+      const dbCart = res.data || [];
+
+      const mergedCart = [...dbCart];
+      localCart.forEach(localItem => {
+        const found = mergedCart.find(i => i.id === localItem.id);
+        if (found) {
+          found.quantity += localItem.quantity;
+        } else {
+          mergedCart.push(localItem);
+        }
+      });
+
+      setCart(mergedCart);
+      await axios.post(`${backendUrl}/api/users/cart`, { items: mergedCart }, { withCredentials: true });
+      localStorage.removeItem("cart");
+      setShowCartRestorePrompt(false);
+    } catch (err) {
+      console.error("Failed to restore cart:", err);
+    }
+  };
+
+  const discardLocalCart = () => {
+    localStorage.removeItem("cart");
+    setShowCartRestorePrompt(false);
+  };
 
   const addToCart = (product, quantity = 1) => {
     const exists = cart.find(item => item.id === product.id);
@@ -60,8 +145,12 @@ export const AppContextProvider = (props) => {
       setCart([...cart, { ...product, quantity }]);
     }
 
-    setCartMessage(`${product.name} added to cart`);
-    setTimeout(() => setCartMessage(null), 2000);
+    toast.success(`🛒 ${product.name} added to cart`, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+      pauseOnHover: false,
+    });
   };
 
   const updateCartItemQuantity = (id, quantity) => {
@@ -72,6 +161,10 @@ export const AppContextProvider = (props) => {
     setCart(cart.filter(item => item.id !== id));
   };
 
+  const resetCart = () => {
+    setCart([]);
+  };
+
   const value = {
     backendUrl,
     isLoggedIn,
@@ -80,18 +173,22 @@ export const AppContextProvider = (props) => {
     setUserData,
     checkAuthStatus,
     cart,
+    setCart,
     addToCart,
+    resetCart,
     updateCartItemQuantity,
     removeFromCart,
-    cartMessage,
     productData,
     productLoading,
-    fetchProducts
+    fetchProducts,
+    showCartRestorePrompt,
+    restoreCartFromLocal,
+    discardLocalCart
   };
 
   return (
     <AppContext.Provider value={value}>
-      {props.children}
+      {authChecked ? props.children : <div className="text-center py-10 text-gray-500">Loading...</div>}
     </AppContext.Provider>
   );
 };

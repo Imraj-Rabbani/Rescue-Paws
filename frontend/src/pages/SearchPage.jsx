@@ -21,7 +21,7 @@ const SearchPage = () => {
           Search Results for "{searchTerm}"
         </h2>
 
-        {productLoading ? (
+        {productLoading && productData.length === 0 ? (
           <div className="text-gray-500">Loading...</div>
         ) : results.length ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

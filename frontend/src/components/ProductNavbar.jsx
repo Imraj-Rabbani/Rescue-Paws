@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu } from 'react-icons/fi';
 import { useSearch } from '../context/SearchContext';
@@ -7,12 +7,24 @@ import { AppContext } from '../context/AppContext';
 export default function ProductNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { searchTerm, setSearchTerm } = useSearch();
-  const { cart } = useContext(AppContext);
+  const { cart, isLoggedIn, userData, backendUrl, resetCart } = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
-
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  const userMenuRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -23,27 +35,44 @@ export default function ProductNavbar() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch(`${backendUrl}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      
+      resetCart();
+
+      
+      localStorage.removeItem('cart');
+
+      
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+
+      
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
   return (
     <>
-      {/* Promo Bar */}
       <div className="bg-[Cornsilk] text-black text-center py-2 px-4 text-sm">
         ✨ Premium pet products with 10% donated to animal rescues ✨
       </div>
 
-      {/* Navbar */}
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4">
-          {/* Top Row */}
           <div className="flex items-center justify-between py-3">
-            {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
               <img src="/logo_new.png" alt="STRAY PAWS" className="h-10" />
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-black hidden sm:block">
-                STRAY PAWS
-              </span>
+              <span className="text-2xl font-bold hidden sm:block">STRAY PAWS</span>
             </Link>
 
-            {/* Desktop Search */}
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 mx-8 max-w-xl">
               <div className="relative w-full">
                 <input
@@ -59,15 +88,43 @@ export default function ProductNavbar() {
               </div>
             </form>
 
-            {/* Icons */}
             <div className="flex items-center space-x-5">
               <button onClick={() => setSearchOpen(!searchOpen)} className="md:hidden text-gray-700">
                 <FiSearch className="h-6 w-6" />
               </button>
 
-              <Link to="/account" className="hidden md:block text-gray-700 hover:text-purple-600">
-                <FiUser className="h-6 w-6" />
-              </Link>
+              {isLoggedIn ? (
+                <div className="relative hidden md:block" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen((prev) => !prev)}
+                    className="flex items-center text-gray-700 hover:text-purple-600 focus:outline-none"
+                  >
+                    <FiUser className="h-6 w-6" />
+                    <span className="ml-2 font-medium">{userData?.name?.split(' ')[0]}</span>
+                  </button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50">
+                      <Link
+                        to="/profile"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        See Account
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link to="/login" className="hidden md:block text-gray-700 hover:text-purple-600">
+                  <FiUser className="h-6 w-6" />
+                </Link>
+              )}
 
               <div className="relative">
                 <Link to="/cart" className="text-gray-700 hover:text-purple-600">
@@ -86,7 +143,6 @@ export default function ProductNavbar() {
             </div>
           </div>
 
-          {/* Mobile Search */}
           {searchOpen && (
             <form onSubmit={handleSearch} className="md:hidden mb-3 px-4">
               <div className="relative">
@@ -104,7 +160,6 @@ export default function ProductNavbar() {
             </form>
           )}
 
-          {/* Desktop Category Navigation */}
           <div className="hidden md:flex space-x-6 py-3 border-t border-gray-100">
             <Link to="/products" className="text-purple-600 font-medium flex items-center">
               <span className="mr-1">🏠</span> All Products
@@ -123,7 +178,6 @@ export default function ProductNavbar() {
             </Link>
           </div>
 
-          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-3 border-t border-gray-100">
               <div className="flex flex-col space-y-3">
@@ -142,9 +196,12 @@ export default function ProductNavbar() {
                 <Link to="/products/category/health" className={`${location.pathname.includes('/category/health') ? 'text-purple-600 font-medium' : 'text-gray-600'}`}>
                   Health
                 </Link>
-                <Link to="/account" className="text-gray-600">
-                  My Account
-                </Link>
+                {isLoggedIn && (
+                  <>
+                    <Link to="/profile" className="text-gray-600">My Account</Link>
+                    <button onClick={handleLogout} className="text-left text-red-600">Logout</button>
+                  </>
+                )}
               </div>
             </div>
           )}

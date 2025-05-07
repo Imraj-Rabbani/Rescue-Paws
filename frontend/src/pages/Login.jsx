@@ -1,13 +1,21 @@
-import React, { useContext } from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useContext, useState } from "react";
+import { useNavigate, useLocation } from "react-router";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { backendUrl, setIsLoggedIn, checkAuthStatus } = useContext(AppContext);
+  const location = useLocation();
+  const {
+    backendUrl,
+    checkAuthStatus,
+    showCartRestorePrompt,
+    restoreCartFromLocal,
+    discardLocalCart,
+  } = useContext(AppContext);
+
+  const redirectPath = location.state?.from || "/";
 
   const [state, setState] = useState("Sign Up");
   const [loginData, setLoginData] = useState({
@@ -75,10 +83,9 @@ const Login = () => {
         toast.success(
           `${type === "Login" ? "Login" : "Registration"} successful!`
         );
-        setIsLoggedIn(true);
-        checkAuthStatus();
-        navigate("/");
-        // Reset form data after successful submission
+        await checkAuthStatus();
+        navigate(redirectPath, { replace: true });
+
         if (type === "Login") {
           setLoginData({ email: "", password: "" });
         } else {
@@ -110,16 +117,31 @@ const Login = () => {
   const handleRegisterSubmit = (e) => handleAuthSubmit(e, "Sign Up");
 
   return (
+    <div className="min-h-screen flex items-center justify-center py-6 bg-[url('new_background.png')] bg-cover bg-center relative">
+      {showCartRestorePrompt && (
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white shadow-xl border p-5 rounded-xl z-50 w-96 text-center">
+          <p className="font-medium mb-4 text-lg">🛒 Restore your previous cart?</p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={restoreCartFromLocal}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Yes
+            </button>
+            <button
+              onClick={discardLocalCart}
+              className="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
+            >
+              No
+            </button>
+          </div>
+        </div>
+      )}
 
-    <div className="min-h-screen flex items-center justify-center py-6 bg-[url('new_background.png')] bg-cover bg-center">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
         <div className="header mb-8 text-center">
           <a href="http://localhost:5173/">
-            <img
-              src="/logo_new.png"
-              alt="Logo"
-              className="h-[200px] mx-auto"
-            />
+            <img src="/logo_new.png" alt="Logo" className="h-[200px] mx-auto" />
           </a>
           <p className="mt-2 text-xl text-gray-600">
             {state === "Sign Up" ? "Join our community" : "Welcome back"}
@@ -128,14 +150,9 @@ const Login = () => {
 
         {state === "Login" ? (
           <form onSubmit={handleLoginSubmit} className="space-y-6">
-            {loginError && (
-              <p className="text-red-500 text-sm italic">{loginError}</p>
-            )}
+            {loginError && <p className="text-red-500 text-sm italic">{loginError}</p>}
             <div>
-              <label
-                htmlFor="loginEmail"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label htmlFor="loginEmail" className="block text-sm font-semibold text-gray-700">
                 Email address
               </label>
               <input
@@ -149,10 +166,7 @@ const Login = () => {
               />
             </div>
             <div>
-              <label
-                htmlFor="loginPassword"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label htmlFor="loginPassword" className="block text-sm font-semibold text-gray-700">
                 Password
               </label>
               <input
@@ -172,7 +186,7 @@ const Login = () => {
               Log In
             </button>
             <p className="mt-4 text-center text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don't have an account?{' '}
               <button
                 type="button"
                 onClick={toggleAuth}
@@ -184,14 +198,9 @@ const Login = () => {
           </form>
         ) : (
           <form onSubmit={handleRegisterSubmit} className="space-y-6">
-            {registerError && (
-              <p className="text-red-500 text-sm italic">{registerError}</p>
-            )}
+            {registerError && <p className="text-red-500 text-sm italic">{registerError}</p>}
             <div>
-              <label
-                htmlFor="registerName"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label htmlFor="registerName" className="block text-sm font-semibold text-gray-700">
                 Full Name
               </label>
               <input
@@ -205,10 +214,7 @@ const Login = () => {
               />
             </div>
             <div>
-              <label
-                htmlFor="registerEmail"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label htmlFor="registerEmail" className="block text-sm font-semibold text-gray-700">
                 Email address
               </label>
               <input
@@ -222,10 +228,7 @@ const Login = () => {
               />
             </div>
             <div>
-              <label
-                htmlFor="registerPassword"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label htmlFor="registerPassword" className="block text-sm font-semibold text-gray-700">
                 Password
               </label>
               <input
@@ -239,10 +242,7 @@ const Login = () => {
               />
             </div>
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
                 Confirm Password
               </label>
               <input
@@ -262,7 +262,7 @@ const Login = () => {
               Sign Up
             </button>
             <p className="mt-4 text-center text-sm text-gray-600">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <button
                 type="button"
                 onClick={toggleAuth}
