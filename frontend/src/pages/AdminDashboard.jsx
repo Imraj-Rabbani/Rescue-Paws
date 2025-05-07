@@ -5,7 +5,6 @@ import {
     Boxes,
     ClipboardList,
     ArrowRight,
-    Users,
     ShoppingCart,
     AlertTriangle,
     CheckCircle,
