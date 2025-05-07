@@ -1,22 +1,25 @@
-import Team from "../models/Team.js";
-import TeamInvite from "../models/TeamInvite.js";
+import Team from "../models/teamModel.js";
+import TeamInvite from "../models/inviteModel.js";
 import userModel from "../models/userModel.js";
 
 
 export const createTeam = async (req, res) => {
   try {
-    const { name, area } = req.body;
+    const { teamName, location } = req.body;
+
     const team = await Team.create({
-      name,
-      area,
-      creator: req.userId,
-      members: [req.userId],
+      name: teamName,
+      area: location,
+      creator: req.userId
     });
+
     res.json(team);
   } catch (err) {
+    console.error("Team creation error:", err);
     res.status(500).json({ error: "Failed to create team" });
   }
 };
+
 
 // Send an invite
 export const sendTeamInvite = async (req, res) => {

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -234,6 +236,22 @@ const ProfilePage = () => {
             >
               Upload Rescue Image
             </li>
+            {user.role === "volunteer" && (
+              <li
+                className={`cursor-pointer ${
+                  showAddPoints === "createTeam"
+                    ? "text-blue-600 font-semibold"
+                    : ""
+                }`}
+                onClick={() => {
+                  setShowAddPoints("createTeam");
+                  setShowImageUpload(false);
+                  navigate("/createteam"); 
+                }}
+              >
+                Create Team
+              </li>
+            )}
           </ul>
         </div>
 

@@ -23,6 +23,7 @@ import RevenuePage from './components/RevenuePage';
 import VolunteerProfile from './pages/VolunteerProfile';
 import CheckoutPage from './pages/CheckoutPage';
 import 'react-toastify/dist/ReactToastify.css';
+import CreateTeam from './pages/CreateTeam';
 
 const App = () => {
   return (
@@ -47,6 +48,7 @@ const App = () => {
         <Route path="/volunteers/:id" element={<VolunteerProfile />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/adminrevenue" element={<RevenuePage />} />
+        <Route path="/createteam" element={<CreateTeam />} />
       </Routes>
     </div>
   );
