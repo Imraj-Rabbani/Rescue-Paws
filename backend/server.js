@@ -15,6 +15,7 @@ import uploadRouter from "./routes/uploadRoutes.js";
 import productRouter from './routes/productRoutes.js';
 import volunteerRouter from './routes/volunteerRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import teamRouter from './routes/teamRoutes.js';
 
 const app = express()
 
@@ -46,5 +47,6 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/products', productRouter);
 app.use('/api/volunteers', volunteerRouter);
 app.use('/api/orders', orderRoutes);
+app.use('/api/teams', teamRouter);
 
 app.listen(port, () => console.log(`Server started on PORT: ${port}`))
