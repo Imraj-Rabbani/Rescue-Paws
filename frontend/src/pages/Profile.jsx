@@ -216,7 +216,7 @@ const ProfilePage = () => {
             </li>
             <li
               className={`cursor-pointer ${
-                showAddPoints ? "text-blue-600 font-semibold" : ""
+                showAddPoints === true ? "text-blue-600 font-semibold" : ""
               }`}
               onClick={() => {
                 setShowAddPoints(true);
@@ -237,20 +237,28 @@ const ProfilePage = () => {
               Upload Rescue Image
             </li>
             {user.role === "volunteer" && (
-              <li
-                className={`cursor-pointer ${
-                  showAddPoints === "createTeam"
-                    ? "text-blue-600 font-semibold"
-                    : ""
-                }`}
-                onClick={() => {
-                  setShowAddPoints("createTeam");
-                  setShowImageUpload(false);
-                  navigate("/createteam"); 
-                }}
-              >
-                Create Team
-              </li>
+              <>
+                <li
+                  className={`cursor-pointer ${
+                    showAddPoints === "createTeam"
+                      ? "text-blue-600 font-semibold"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setShowAddPoints("createTeam");
+                    setShowImageUpload(false);
+                    navigate("/createteam");
+                  }}
+                >
+                  Create Team
+                </li>
+                <li
+                  className="cursor-pointer hover:text-blue-600"
+                  onClick={() => navigate("/my-page")}
+                >
+                  My Team
+                </li>
+              </>
             )}
           </ul>
         </div>

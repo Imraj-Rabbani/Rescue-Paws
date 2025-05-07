@@ -2,7 +2,6 @@ import Team from "../models/teamModel.js";
 import TeamInvite from "../models/inviteModel.js";
 import userModel from "../models/userModel.js";
 
-
 export const createTeam = async (req, res) => {
   try {
     const { teamName, location } = req.body;
@@ -19,7 +18,6 @@ export const createTeam = async (req, res) => {
     res.status(500).json({ error: "Failed to create team" });
   }
 };
-
 
 // Send an invite
 export const sendTeamInvite = async (req, res) => {
@@ -82,5 +80,76 @@ export const postTeamActivity = async (req, res) => {
     res.json(team.activities);
   } catch (err) {
     res.status(500).json({ error: "Failed to post update" });
+  }
+};
+
+export const getMyTeams = async (req, res) => {
+  try {
+    console.log('Fetching teams for user:', req.userId);
+    
+    // Get teams without population
+    const teams = await Team.find({
+      $or: [
+        { creator: req.userId },
+        { members: req.userId },
+      ]
+    }).lean(); // Using lean() for better performance
+    
+    if (!teams || teams.length === 0) {
+      return res.json([]);
+    }
+
+    // Get all unique user IDs from teams
+    const userIds = new Set();
+    teams.forEach(team => {
+      if (team.creator) userIds.add(team.creator.toString());
+      if (team.members && Array.isArray(team.members)) {
+        team.members.forEach(member => userIds.add(member.toString()));
+      }
+    });
+    
+    // Fetch all users in a single query
+    const users = await userModel.find(
+      { _id: { $in: Array.from(userIds) } },
+      { name: 1, email: 1 }
+    ).lean();
+    
+    // Create a map for quick lookups
+    const userMap = {};
+    users.forEach(user => {
+      userMap[user._id.toString()] = user;
+    });
+    
+    // Manually populate the teams
+    const populatedTeams = teams.map(team => {
+      // Populate creator
+      if (team.creator && userMap[team.creator.toString()]) {
+        team.creator = {
+          _id: team.creator,
+          name: userMap[team.creator.toString()].name
+        };
+      } else {
+        team.creator = { _id: team.creator, name: "Unknown User" };
+      }
+      
+      // Populate members
+      if (team.members && Array.isArray(team.members)) {
+        team.members = team.members.map(memberId => {
+          const member = userMap[memberId.toString()];
+          return member ? 
+            { _id: memberId, name: member.name, email: member.email } : 
+            { _id: memberId, name: "Unknown User", email: "unknown@example.com" };
+        });
+      } else {
+        team.members = [];
+      }
+      
+      return team;
+    });
+    
+    res.json(populatedTeams);
+  } catch (err) {
+    console.error('Error fetching teams:', err);
+    res.status(500).json({ message: "Error fetching teams", error: err.message });
   }
 };
