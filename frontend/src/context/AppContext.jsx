@@ -106,8 +106,9 @@ export const AppContextProvider = (props) => {
   const restoreCartFromLocal = async () => {
     try {
       const localCart = JSON.parse(localStorage.getItem("cart")) || [];
-      const res = await axios.get(`${backendUrl}/api/users/cart`, { withCredentials: true });
-      const dbCart = res.data || [];
+      const res = await axios.get(`${backendUrl}/api/users/cart`, {
+        withCredentials: true,
+      });
 
       const mergedCart = [...dbCart];
       localCart.forEach(localItem => {
