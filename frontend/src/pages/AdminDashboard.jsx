@@ -148,9 +148,11 @@ const AdminDashboard = () => {
     const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
     const [mostOrderedProductsData, setMostOrderedProductsData] = useState([]);
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-    const [orders, setOrders] = useState(null);
     const [loading, setLoading] = useState(false);
     const [fetchError, setFetchError] = useState(null);
+    const [orders, setOrders] = useState(null);
+    // Add this line if it's not already in your code.
+    const [totalRevenue, setTotalRevenue] = useState('Loading...');
     const [totalInvestment, setTotalInvestment] = useState('Loading...');
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -210,6 +212,43 @@ const AdminDashboard = () => {
         fetchMostOrdered();
     }, []);
 
+    // Fetch all orders and calculate total revenue
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            setFetchError(null);
+            try {
+                const res = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                if (res.data?.success) {
+                    setOrders(res.data.orders);
+
+                    const calculatedTotalRevenue = res.data.orders.reduce((sum, order) => {
+                        return sum + (order.totalPoints || 0);
+                    }, 0);
+                    setTotalRevenue(calculatedTotalRevenue);
+                } else {
+                    const errorMessage = res.data?.message || res.data?.error || 'Failed to fetch orders.';
+                    setFetchError(errorMessage);
+                }
+            } catch (err) {
+                const message =
+                    err.response?.data?.message ||
+                    (err.response ? `Status: ${err.response.status}` :
+                        err.request ? 'No server response.' :
+                            err.message || 'Request error.');
+                setFetchError(message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrders();
+    }, [backendUrl]);
+
     // Fetched recentOrders data from orders
     const recentOrders = orders ? orders.slice(0, 3) : [];
 
@@ -268,7 +307,7 @@ const AdminDashboard = () => {
     };
 
     // Function to render a simple DONUT chart
-    const fixedColors = ['#FFD700', '#FF69B4', '#1E90FF', '#9B59B6', '#2ECC71'];
+    const fixedColors = ['#FFD700', '#9B59B6', '#FF69B4', '#1E90FF', '#2ECC71'];
     const renderDonutChart = (data, title) => {
         if (!data || data.length === 0)
             return <div className="text-gray-400 text-center">No data to display</div>;
@@ -298,13 +337,11 @@ const AdminDashboard = () => {
                         const endAngle = startAngle + angle;
                         const midAngle = (startAngle + endAngle) / 2;
                         const percentage = ((item.orders / total) * 100).toFixed(1);
-
                         const startX = chartRadius + chartRadius * Math.cos((startAngle - 90) * Math.PI / 180);
                         const startY = chartRadius + chartRadius * Math.sin((startAngle - 90) * Math.PI / 180);
                         const endX = chartRadius + chartRadius * Math.cos((endAngle - 90) * Math.PI / 180);
                         const endY = chartRadius + chartRadius * Math.sin((endAngle - 90) * Math.PI / 180);
                         const largeArcFlag = angle > 180 ? 1 : 0;
-
                         const pathData = `
                       M ${chartRadius} ${chartRadius}
                       L ${startX} ${startY}
@@ -312,12 +349,9 @@ const AdminDashboard = () => {
                       L ${chartRadius + holeRadius * Math.cos((endAngle - 90) * Math.PI / 180)} ${chartRadius + holeRadius * Math.sin((endAngle - 90) * Math.PI / 180)}
                       A ${holeRadius} ${holeRadius} 0 ${largeArcFlag} 0 ${chartRadius + holeRadius * Math.cos((startAngle - 90) * Math.PI / 180)} ${chartRadius + holeRadius * Math.sin((startAngle - 90) * Math.PI / 180)}
                       Z`;
-
                         const percentageX = chartRadius + (chartRadius * 0.65) * Math.cos((midAngle - 90) * Math.PI / 180);
                         const percentageY = chartRadius + (chartRadius * 0.65) * Math.sin((midAngle - 90) * Math.PI / 180);
-
                         const color = fixedColors[index % fixedColors.length];
-
                         return (
                             <g key={index}>
                                 <path
@@ -346,7 +380,7 @@ const AdminDashboard = () => {
                 </svg>
 
                 {/* Legend */}
-                <div className="absolute top-0 right-7 text-[10px]">
+                <div className={`absolute top-0 right-7 text-[10px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
                     {top5Data.map((item, index) => (
                         <div key={index} className="flex items-center space-x-2">
                             <div
@@ -356,11 +390,7 @@ const AdminDashboard = () => {
                             <span>{item.name ? item.name.substring(0, 10) : `Product ${index + 1}`}</span>
                         </div>
                     ))}
-                </div>
-            </div>
-        );
-    };
-
+                </div></div>);};
 
     // Function to render a simple line chart
     const renderLineChart = (data, title) => {
@@ -607,8 +637,8 @@ const AdminDashboard = () => {
                         </div>
                         {/* Bottom Section: Quick Tables */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <Card title="Recent Orders">
-                                <ul className="space-y-3">
+                            <Card title={<span><span className="text-3xl mr-1">🛒</span> Recent Orders </span>} className="bg-[#e4c2a6]">
+                                <ul className="space-y-3.5 mt-2">
                                     {recentOrders.map(order => (
                                         <li key={order._id} className={isDarkMode ? 'text-gray-300 text-sm' : 'text-[#664C36] text-sm'}>
                                             <span className="font-medium">Order #{order._id}</span> -{' '}
@@ -618,34 +648,29 @@ const AdminDashboard = () => {
                                                         ? 'text-yellow-500'
                                                         : order.status === 'Shipped'
                                                             ? 'text-blue-500'
-                                                            : 'text-green-500'
-                                                }
-                                            >
+                                                            : 'text-green-500'}>
                                                 {order.status}
                                             </span>
-                                        </li>
-                                    ))}
-
+                                        </li>))}
                                 </ul>
                                 <StyledLink to="/adminorders" className="mt-4 inline-flex items-center text-sm">
                                     View All Orders <ArrowRight className="w-4 h-4 ml-1" />
                                 </StyledLink>
                             </Card>
-                            <Card title="Low Stock Alerts" className="bg-[#e4c2a6]">
+                            <Card title={<span><span className="text-2xl mr-1">🔴</span> Low Stock Alert </span>} className="bg-[#e4c2a6]">
                                 <ul className="space-y-3.5 mt-2">
                                     {lowStockProducts.map((alert, index) => (
                                         <li key={index} className={isDarkMode ? 'text-gray-300 text-sm flex items-center' : 'text-[#664C36] text-sm flex items-center'}>
                                             <AlertTriangle className="w-6 h-6 mr-2 text-red-500 inline-block" />
                                             <span className="font-medium">{alert.name}</span> -{' '}
                                             {alert.stockQuantity} pcs!
-                                        </li>
-                                    ))}
+                                        </li>))}
                                 </ul>
                                 <StyledLink to="/adminproducts" className="mt-4 inline-flex items-center text-sm">
                                     Manage Stock <ArrowRight className="w-4 h-4 ml-1" />
                                 </StyledLink>
                             </Card>
-                            <Card title="📊 Financial Overview" className="bg-[#e4c2a6]">
+                            <Card title={<span><span className="text-3xl mr-1">💰</span> Financial Overview</span>} className="bg-[#e4c2a6]">
                                 <ul className="space-y-3.5 mt-2">
                                     <li className="flex items-center space-x-2">
                                         <DollarSign className="w-6 h-6 text-[#FF8042]" />
@@ -657,10 +682,9 @@ const AdminDashboard = () => {
                                     <li className="flex items-center space-x-2">
                                         <TrendingUp className="w-6 h-6 text-[#00C49F]" />
                                         <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
-                                            <span className="font-semibold">Total Revenue</span> — Loading...
+                                            <span className="font-semibold">Total Revenue</span> — {totalRevenue}$
                                         </span>
                                     </li>
-
                                     <li className="flex items-center space-x-2">
                                         <PiggyBank className="w-6 h-6 text-[#AF19FF]" />
                                         <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
