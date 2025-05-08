@@ -254,7 +254,7 @@ const ProfilePage = () => {
                 </li>
                 <li
                   className="cursor-pointer hover:text-blue-600"
-                  onClick={() => navigate("/my-page")}
+                  onClick={() => navigate("/my-team")}
                 >
                   My Team
                 </li>

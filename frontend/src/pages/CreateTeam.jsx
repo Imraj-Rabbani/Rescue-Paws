@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 const CreateTeamPage = () => {
   const [teamName, setTeamName] = useState("");
@@ -33,9 +34,12 @@ const CreateTeamPage = () => {
   };
 
   return (
+    <>
+    <Navbar/>
+    <div className="h-[20vh]"></div>
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto p-4 bg-white rounded-xl shadow"
+      className="max-w-md mx-auto p-4 bg-white rounded-xl shadow-xl border"
     >
       <h2 className="text-xl font-bold mb-4">Create a Team</h2>
 
@@ -80,6 +84,7 @@ const CreateTeamPage = () => {
         Create Team
       </button>
     </form>
+    </>
   );
 };
 

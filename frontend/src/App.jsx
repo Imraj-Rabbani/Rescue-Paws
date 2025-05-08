@@ -52,7 +52,7 @@ const App = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/adminrevenue" element={<RevenuePage />} />
         <Route path="/createteam" element={<CreateTeam />} />
-        <Route path="/my-page" element={<MyTeam />} />
+        <Route path="/my-team" element={<MyTeam />} />
         <Route path='/team-invitations' element={<TeamInvitations />} />
         <Route path='/teams' element={<Teams />} />
       </Routes>
