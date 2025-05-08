@@ -1,11 +1,26 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiStar } from "react-icons/fi";
 import { AppContext } from "../context/AppContext";
+import axios from "axios";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
-  const { addToCart } = useContext(AppContext);
+  const { addToCart, backendUrl } = useContext(AppContext);
+  const [stockQuantity, setStockQuantity] = useState(product.stockQuantity);
+
+  useEffect(() => {
+    const fetchStock = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/products/${product.id}`);
+        setStockQuantity(response.data.stockQuantity);
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      }
+    };
+
+    fetchStock();
+  }, [backendUrl, product.id]);
 
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
@@ -13,9 +28,12 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    addToCart(product, 1);
-    
+    if (stockQuantity > 0) {
+      addToCart(product, 1);
+    }
   };
+
+  const inStock = stockQuantity > 0;
 
   return (
     <div
@@ -55,20 +73,30 @@ const ProductCard = ({ product }) => {
             </div>
           )}
 
-          <p className="text-sm text-gray-600 mb-4">{product.description}</p>
+          <p className="text-sm text-gray-600 mb-2">{product.description}</p>
 
           {/* PetPoints */}
-          <div className="flex items-center gap-2 text-purple-700 font-semibold mt-2">
+          <div className="flex items-center gap-2 text-purple-700 font-semibold mt-1">
             <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
             <span>{product.sellingPrice.toFixed(2)}</span>
             <span>PetPoints</span>
           </div>
+
+          {/* Stock Display */}
+          <p className={`text-sm mt-2 ${inStock ? "text-green-600" : "text-red-600"}`}>
+            {inStock ? `In Stock (${stockQuantity})` : "Out of Stock"}
+          </p>
         </div>
 
         {/* Button always at bottom */}
         <button
-          className="mt-4 w-full bg-gray-900 text-white py-2 rounded-lg font-medium hover:bg-gray-800 transition"
+          className={`mt-4 w-full text-white py-2 rounded-lg font-medium transition ${
+            inStock
+              ? "bg-gray-900 hover:bg-gray-800"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
           onClick={handleAddToCart}
+          disabled={!inStock}
         >
           Add to Cart
         </button>

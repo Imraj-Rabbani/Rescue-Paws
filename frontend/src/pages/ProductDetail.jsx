@@ -11,24 +11,20 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { addToCart, productData, productLoading, isLoggedIn } = useContext(AppContext);
+  const { addToCart, productData, isLoggedIn } = useContext(AppContext);
 
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
+  // Always fetch live product from backend
   useEffect(() => {
-    const cachedProduct = productData.find(p => p.id === id);
-    if (cachedProduct) {
-      setProduct(cachedProduct);
-    } else {
-      // fallback only if not found in context
-      getProductById(id).then(data => setProduct(data));
-    }
-  }, [id, productData]);
+    getProductById(id).then(data => setProduct(data));
+  }, [id]);
 
+  // Filter related products from cached context
   useEffect(() => {
-    if (!product || productLoading) return;
+    if (!product) return;
 
     const related = productData
       .filter(p => p.id !== id && p.category === product.category)
@@ -42,7 +38,7 @@ const ProductDetail = () => {
     } else {
       setRelatedProducts(related);
     }
-  }, [product, productData, id, productLoading]);
+  }, [product, productData, id]);
 
   if (!product) return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
@@ -54,9 +50,11 @@ const ProductDetail = () => {
     if (!isLoggedIn) {
       navigate('/login', { state: { from: location.pathname } });
     } else {
-      navigate('/checkout', { state: { from: 'buyNow', product } });
+      navigate('/checkout', { state: { from: 'buyNow', product: { ...product, quantity } } });
     }
   };
+
+  const maxQty = Math.min(product.stockQuantity || 0, 5);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -67,7 +65,6 @@ const ProductDetail = () => {
       </div>
 
       <div className="container mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
-        {/* Product Image */}
         <div>
           <img
             src={product.imageUrl}
@@ -79,13 +76,11 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Info */}
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between">
           <div>
             <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
             <p className="text-gray-600 mb-4">{product.description}</p>
 
-            {/* PetPoints Display Only */}
             <div className="mb-4">
               <div className="flex items-center gap-2 text-purple-600 font-semibold text-xl">
                 <img src="/petpoints.png" alt="PetPoints" className="w-6 h-6" />
@@ -94,8 +89,10 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="text-green-600 font-medium mb-4">
-              {product.stockQuantity > 0 ? 'In Stock' : 'Out of Stock'}
+            <div className={`font-medium mb-4 ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
+              {product.stockQuantity > 0
+                ? `In Stock (${product.stockQuantity} available)`
+                : 'Out of Stock'}
             </div>
 
             <label htmlFor="quantity" className="block mb-1 font-medium">Quantity</label>
@@ -104,24 +101,25 @@ const ProductDetail = () => {
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               className="mb-6 border rounded px-3 py-1 w-24"
+              disabled={product.stockQuantity === 0}
             >
-              {[1, 2, 3, 4, 5].map(n => (
-                <option key={n} value={n}>{n}</option>
+              {[...Array(maxQty).keys()].map(n => (
+                <option key={n + 1} value={n + 1}>{n + 1}</option>
               ))}
             </select>
 
             <div className="space-y-3">
               <button
                 className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded"
-                onClick={() => {
-                  addToCart(product, quantity);
-                }}
+                onClick={() => addToCart(product, quantity)}
+                disabled={product.stockQuantity === 0}
               >
                 Add to Cart
               </button>
               <button
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded"
                 onClick={handleBuyNow}
+                disabled={product.stockQuantity === 0}
               >
                 Buy Now
               </button>
@@ -132,7 +130,6 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="container mx-auto px-4 py-10">
           <h3 className="text-2xl font-bold text-gray-800 mb-6">Related Products</h3>

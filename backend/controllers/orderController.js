@@ -1,6 +1,7 @@
-// backend/controllers/orderController.js
+
 import Order from '../models/Order.js';
 import User from '../models/userModel.js';
+import Product from '../models/ProductModel.js'; 
 
 // Place an order
 export const placeOrder = async (req, res) => {
@@ -15,10 +16,22 @@ export const placeOrder = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    const totalPoints = items.reduce(
-      (acc, item) => acc + item.sellingPrice * (item.quantity || 1),
-      0
-    ) + (donation || 0);
+    let totalPoints = donation || 0;
+
+    // Validate and calculate total points
+    for (const item of items) {
+      const product = await Product.findOne({ id: item.id });
+
+      if (!product) {
+        return res.status(400).json({ success: false, message: `Product not found: ${item.name}` });
+      }
+
+      if (product.stockQuantity < item.quantity) {
+        return res.status(400).json({ success: false, message: `Not enough stock for ${item.name}` });
+      }
+
+      totalPoints += item.sellingPrice * item.quantity;
+    }
 
     if (user.points < totalPoints) {
       return res.status(400).json({ success: false, message: "Not enough PetPoints." });
@@ -27,13 +40,7 @@ export const placeOrder = async (req, res) => {
     const newOrder = new Order({
       userId,
       items,
-      userInfo: {
-        name,
-        phone,
-        address,
-        promo,
-        shipping
-      },
+      userInfo: { name, phone, address, promo, shipping },
       donation,
       totalPoints,
       status: 'Pending'
@@ -41,12 +48,20 @@ export const placeOrder = async (req, res) => {
 
     await newOrder.save();
 
-    // Deduct points from user
+    // Deduct stock and update products
+    for (const item of items) {
+      await Product.findOneAndUpdate(
+        { id: item.id },
+        { $inc: { stockQuantity: -item.quantity } }
+      );
+    }
+
+    // Deduct PetPoints
     user.points -= totalPoints;
     await user.save();
 
     res.status(200).json({ success: true, message: "Order placed successfully." });
-    
+
   } catch (error) {
     console.error("Order placement error:", error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -64,19 +79,15 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// Admin: Delete an order
+// Admin: Delete order
 export const deleteOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
-
     const order = await Order.findByIdAndDelete(orderId);
-
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
-
     res.status(200).json({ success: true, message: 'Order deleted successfully.' });
-
   } catch (error) {
     console.error('Error deleting order:', error);
     res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -86,27 +97,26 @@ export const deleteOrder = async (req, res) => {
 // Admin: Update order status
 export const updateOrderStatus = async (req, res) => {
   try {
-      const orderId = req.params.id;
-      const { status } = req.body;
+    const orderId = req.params.id;
+    const { status } = req.body;
 
-      if (!status || !['Pending', 'Out for Delivery', 'Delivered'].includes(status)) {
-          return res.status(400).json({ success: false, message: "Invalid status provided." });
-      }
+    if (!status || !['Pending', 'Out for Delivery', 'Delivered'].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status provided." });
+    }
 
-      const updatedOrder = await Order.findByIdAndUpdate(
-          orderId,
-          { status, updatedAt: Date.now() }, // Update status and updatedAt
-          { new: true, runValidators: true } // Return the updated document and run validation
-      );
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status, updatedAt: Date.now() },
+      { new: true, runValidators: true }
+    );
 
-      if (!updatedOrder) {
-          return res.status(404).json({ success: false, message: 'Order not found.' });
-      }
+    if (!updatedOrder) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
 
-      res.status(200).json({ success: true, message: 'Order status updated successfully.', order: updatedOrder });
-
+    res.status(200).json({ success: true, message: 'Order status updated successfully.', order: updatedOrder });
   } catch (error) {
-      console.error('Error updating order status:', error);
-      res.status(500).json({ success: false, message: 'Internal server error.' });
+    console.error('Error updating order status:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 };
