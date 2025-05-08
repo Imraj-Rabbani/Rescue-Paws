@@ -26,6 +26,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import CreateTeam from './pages/CreateTeam';
 import MyTeam from './pages/MyTeam';
 import TeamInvitations from './pages/TeamInvitation';
+import Teams from './pages/Teams';
 
 const App = () => {
   return (
@@ -53,6 +54,7 @@ const App = () => {
         <Route path="/createteam" element={<CreateTeam />} />
         <Route path="/my-page" element={<MyTeam />} />
         <Route path='/team-invitations' element={<TeamInvitations />} />
+        <Route path='/teams' element={<Teams />} />
       </Routes>
     </div>
   );

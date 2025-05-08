@@ -148,3 +148,18 @@ export const getMyTeams = async (req, res) => {
     res.status(500).json({ message: "Error fetching teams", error: err.message });
   }
 };
+
+
+export const getAllTeams = async (req, res) => {
+  try {
+    const teams = await Team.find()
+      .populate('creator', 'name email')
+      .populate('members', 'name email')
+      .lean();
+    console.log(teams)
+    res.status(200).json(teams);
+  } catch (err) {
+    console.error('Error fetching teams:', err);
+    res.status(500).json({ message: 'Error fetching teams', error: err.message });
+  }
+};
