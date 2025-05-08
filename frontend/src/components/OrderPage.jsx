@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AppContext } from '../context/AppContext';
-import { Edit, Trash2, Save, X, AlertTriangle, Info, Truck, CheckCircle, Clock } from 'lucide-react';
+import {Trash2, AlertTriangle, Info, Truck, CheckCircle, Clock } from 'lucide-react';
 import AdminNavbar from './AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 
