@@ -1,16 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Boxes,
-    ClipboardList,
-    ArrowRight,
-    ShoppingCart,
-    AlertTriangle,
-    CheckCircle,
-    GripVertical,
-    CreditCard
-} from 'lucide-react';
+import {Boxes,ClipboardList,ArrowRight,ShoppingCart,AlertTriangle,CheckCircle,GripVertical,CreditCard} from 'lucide-react';
 import AdminNavbar from '../components/AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
@@ -150,18 +141,56 @@ const AdminDashboard = () => {
     const { isDarkMode } = useContext(DarkmodeContext);
     const [totalProducts, setTotalProducts] = useState(0);
     const [lowStockProducts, setLowStockProducts] = useState([]);
-
+    const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+    const [orders, setOrders] = useState(null); 
+    const [loading, setLoading] = useState(false); 
+    const [fetchError, setFetchError] = useState(null); 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
-    // Sample data for demonstration
-    const recentOrders = [
-        { id: 123, volunteer: 'Volunteer A', status: 'Pending', date: '2024-07-28' },
-        { id: 124, volunteer: 'Volunteer B', status: 'Shipped', date: '2024-07-27' },
-        { id: 125, volunteer: 'Volunteer C', status: 'Delivered', date: '2024-07-26' },
-    ];
+    //fetch all orders
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            setFetchError(null);
+            try {
+                const res = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                if (res.data?.success) {
+                    setOrders(res.data.orders);
+                } else {
+                    const errorMessage = res.data?.message || res.data?.error || 'Failed to fetch orders.';
+                    setFetchError(errorMessage);
+                }
+            } catch (err) {
+                const message =
+                    err.response?.data?.message ||
+                    (err.response ? `Status: ${err.response.status}` :
+                    err.request ? 'No server response.' :
+                    err.message || 'Request error.');
+                setFetchError(message);
+            }
+            setLoading(false);
+        };
+        fetchOrders();
+    }, [backendUrl]);
 
+    //calculate pending order count
+    useEffect(() => {
+        if (orders) {
+            const pendingCount = orders.filter(order => order.status === 'Pending').length;
+            setPendingOrdersCount(pendingCount);
+        }
+    }, [orders]);
+    
+    // Sample data for demonstration (you'll likely remove this once your API is fully integrated)
+    const recentOrders = orders ? orders.slice(0, 3) : []; // Use fetched orders if available
     const newVolunteerSignups = [
         { name: 'Volunteer D', area: 'Area 1', date: '2024-07-28' },
         { name: 'Volunteer E', area: 'Area 2', date: '2024-07-27' },
@@ -177,7 +206,6 @@ const AdminDashboard = () => {
         { product: 'Product D', orders: 11.8, color: '#FF8042' },
         { product: 'Product E', orders: 15.8, color: '#AF19FF' },
         { product: 'Product F', orders: 23.7, color: '#8884d8' },
-        // ... and so on for all your top ordered products
     ];
     const volunteerPurchaseActivity = [10, 20, 15, 25, 30, 28, 35];
 
@@ -256,14 +284,11 @@ const AdminDashboard = () => {
                         const labelRadiusPercentage = chartRadius * 0.65; // Adjust for percentage label position
                         const percentageX = (outerRadius + labelRadiusPercentage * Math.cos((midAngle - 90) * Math.PI / 180));
                         const percentageY = (outerRadius + labelRadiusPercentage * Math.sin((midAngle - 90) * Math.PI / 180));
-
                         const startPointX = outerRadius * Math.cos((startAngle - 90) * Math.PI / 180);
                         const startPointY = outerRadius * Math.sin((startAngle - 90) * Math.PI / 180);
                         const endPointX = outerRadius * Math.cos((endAngle - 90) * Math.PI / 180);
                         const endPointY = outerRadius * Math.sin((endAngle - 90) * Math.PI / 180);
-
                         const largeArcFlag = angle > 180 ? 1 : 0;
-
                         const pathData = `M ${outerRadius} ${outerRadius}
                                           L ${outerRadius + startPointX} ${outerRadius + startPointY}
                                           A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerRadius + endPointX} ${outerRadius + endPointY}
@@ -508,7 +533,7 @@ const AdminDashboard = () => {
                             <StyledLink to="/adminorders">
                                 <OverviewCard
                                     title="Pending Orders"
-                                    value={23}
+                                    value={loading ? 'Loading...' : pendingOrdersCount}
                                     icon={() => <ShoppingCart className={isDarkMode ? 'text-yellow-200 w-11 h-11' : 'text-yellow-400 w-11 h-11'} />}
                                     onClick={() => setActiveTab('Orders')}
                                 />
@@ -519,7 +544,7 @@ const AdminDashboard = () => {
                                 icon={() => <CreditCard className={isDarkMode ? 'text-green-500 w-11 h-11' : 'text-green-600 w-11 h-11'} />}
                                 onClick={() => setActiveTab('Revenue')}
                             />
-                           
+
                         </div>
 
                         {/* Middle Section: Analytics Panel */}
@@ -539,8 +564,8 @@ const AdminDashboard = () => {
                             <Card title="Recent Orders">
                                 <ul className="space-y-3">
                                     {recentOrders.map(order => (
-                                        <li key={order.id} className={isDarkMode ? 'text-gray-300 text-sm' : 'text-[#664C36] text-sm'}>
-                                            <span className="font-medium">Order #{order.id}</span> -{' '}
+                                        <li key={order._id} className={isDarkMode ? 'text-gray-300 text-sm' : 'text-[#664C36] text-sm'}>
+                                            <span className="font-medium">Order #{order._id}</span> -{' '}
                                             {order.volunteer} -{' '}
                                             <span
                                                 className={
@@ -556,6 +581,7 @@ const AdminDashboard = () => {
                                             ({order.date})
                                         </li>
                                     ))}
+
                                 </ul>
                                 <StyledLink to="/adminorders" className="mt-4 inline-flex items-center text-sm">
                                     View All Orders <ArrowRight className="w-4 h-4 ml-1" />
