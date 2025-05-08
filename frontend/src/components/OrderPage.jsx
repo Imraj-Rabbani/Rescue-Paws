@@ -127,22 +127,6 @@ const OrderPage = () => {
         setOrderToDelete(null);
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        if (name.startsWith('userInfo.')) {
-            const userInfoPart = name.split('.')[1];
-            setNewOrder({
-                ...newOrder,
-                userInfo: {
-                    ...newOrder.userInfo,
-                    [userInfoPart]: value,
-                },
-            });
-        } else {
-            setNewOrder({ ...newOrder, [name]: value });
-        }
-    };
-
     const setOrderView = (viewType) => {
         setFilterView(viewType);
     };
