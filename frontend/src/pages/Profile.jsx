@@ -258,6 +258,12 @@ const ProfilePage = () => {
                 >
                   My Team
                 </li>
+                <li
+                  className="cursor-pointer hover:text-blue-600"
+                  onClick={() => navigate("/team-invitations")}
+                >
+                  My Invitations
+                </li>
               </>
             )}
           </ul>

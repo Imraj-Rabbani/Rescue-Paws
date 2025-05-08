@@ -16,6 +16,7 @@ import productRouter from './routes/productRoutes.js';
 import volunteerRouter from './routes/volunteerRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import teamRouter from './routes/teamRoutes.js';
+import inviteRoutes from './routes/inviteRoutes.js';
 
 const app = express()
 
@@ -48,5 +49,7 @@ app.use('/api/products', productRouter);
 app.use('/api/volunteers', volunteerRouter);
 app.use('/api/orders', orderRoutes);
 app.use('/api/teams', teamRouter);
+app.use('/api', inviteRoutes);
+
 
 app.listen(port, () => console.log(`Server started on PORT: ${port}`))

@@ -85,21 +85,16 @@ export const postTeamActivity = async (req, res) => {
 
 export const getMyTeams = async (req, res) => {
   try {
-    console.log('Fetching teams for user:', req.userId);
-    
-    // Get teams without population
-    const teams = await Team.find({
-      $or: [
-        { creator: req.userId },
-        { members: req.userId },
-      ]
-    }).lean(); // Using lean() for better performance
-    
+    console.log('Fetching teams created by user:', req.userId);
+
+    // Get teams where the user is the creator
+    const teams = await Team.find({ creator: req.userId }).lean();
+
     if (!teams || teams.length === 0) {
       return res.json([]);
     }
 
-    // Get all unique user IDs from teams
+    // Get all unique user IDs from teams (creator + members)
     const userIds = new Set();
     teams.forEach(team => {
       if (team.creator) userIds.add(team.creator.toString());
@@ -107,19 +102,19 @@ export const getMyTeams = async (req, res) => {
         team.members.forEach(member => userIds.add(member.toString()));
       }
     });
-    
+
     // Fetch all users in a single query
     const users = await userModel.find(
       { _id: { $in: Array.from(userIds) } },
       { name: 1, email: 1 }
     ).lean();
-    
+
     // Create a map for quick lookups
     const userMap = {};
     users.forEach(user => {
       userMap[user._id.toString()] = user;
     });
-    
+
     // Manually populate the teams
     const populatedTeams = teams.map(team => {
       // Populate creator
@@ -131,22 +126,22 @@ export const getMyTeams = async (req, res) => {
       } else {
         team.creator = { _id: team.creator, name: "Unknown User" };
       }
-      
+
       // Populate members
       if (team.members && Array.isArray(team.members)) {
         team.members = team.members.map(memberId => {
           const member = userMap[memberId.toString()];
-          return member ? 
-            { _id: memberId, name: member.name, email: member.email } : 
+          return member ?
+            { _id: memberId, name: member.name, email: member.email } :
             { _id: memberId, name: "Unknown User", email: "unknown@example.com" };
         });
       } else {
         team.members = [];
       }
-      
+
       return team;
     });
-    
+
     res.json(populatedTeams);
   } catch (err) {
     console.error('Error fetching teams:', err);

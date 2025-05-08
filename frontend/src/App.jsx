@@ -25,6 +25,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import 'react-toastify/dist/ReactToastify.css';
 import CreateTeam from './pages/CreateTeam';
 import MyTeam from './pages/MyTeam';
+import TeamInvitations from './pages/TeamInvitation';
 
 const App = () => {
   return (
@@ -51,6 +52,7 @@ const App = () => {
         <Route path="/adminrevenue" element={<RevenuePage />} />
         <Route path="/createteam" element={<CreateTeam />} />
         <Route path="/my-page" element={<MyTeam />} />
+        <Route path='/team-invitations' element={<TeamInvitations />} />
       </Routes>
     </div>
   );
