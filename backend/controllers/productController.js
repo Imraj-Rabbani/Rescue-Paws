@@ -1,4 +1,4 @@
-import Product from '../models/ProductModel.js'; 
+import Product from '../models/ProductModel.js';
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -102,4 +102,35 @@ export const getRecommendedProducts = async (req, res) => {
       res.status(500).json({ message: 'Failed to fetch recommendations', error: error.message });
     }
   };
+  
+  import Order from '../models/Order.js';
+
+export const getMostOrderedProducts = async (req, res) => {
+  try {
+    const aggregated = await Order.aggregate([
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.name',
+          imageUrl: { $first: '$items.imageUrl' },
+          totalOrders: { $sum: '$items.quantity' }
+        }
+      },
+      { $sort: { totalOrders: -1 } },
+      { $limit: 5 }
+    ]);
+
+    const formatted = aggregated.map(item => ({
+      name: item._id,
+      imageUrl: item.imageUrl,
+      orders: item.totalOrders
+    }));
+
+    res.status(200).json(formatted);
+  } catch (error) {
+    console.error('Error fetching most ordered products:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
   

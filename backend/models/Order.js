@@ -1,6 +1,7 @@
 // backend/models/Order.js
 import mongoose from 'mongoose';
 
+
 const orderSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -9,12 +10,14 @@ const orderSchema = new mongoose.Schema({
   },
   items: [
     {
+      
       name: String,
       imageUrl: String,
       quantity: Number,
       sellingPrice: Number
     }
   ],
+  
   userInfo: {
     name: String,
     phone: String,
