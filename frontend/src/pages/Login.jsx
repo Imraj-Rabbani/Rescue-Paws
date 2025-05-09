@@ -50,10 +50,12 @@ const Login = () => {
   const handleAuthSubmit = async (e, type) => {
     try {
       e.preventDefault();
-
+  
+      axios.defaults.withCredentials = true; // 🔐 Ensure cookies are sent
+  
       let payload = {};
       let endpoint = "";
-
+  
       if (type === "Login") {
         const { email, password } = loginData;
         if (!email || !password) {
@@ -65,7 +67,7 @@ const Login = () => {
       } else if (type === "Sign Up") {
         const { name, email, password, confirmPassword } = registerData;
         if (!name || !email || !password || !confirmPassword) {
-          toast.error("Please enter all the  details.");
+          toast.error("Please enter all the details.");
           return;
         }
         if (password !== confirmPassword) {
@@ -74,18 +76,19 @@ const Login = () => {
         }
         payload = { name, email, password };
         endpoint = "/api/auth/register";
-        axios.defaults.withCredentials = true;
       }
-
+  
       const response = await axios.post(backendUrl + endpoint, payload);
-
+  
       if (response.data.success) {
-        toast.success(
-          `${type === "Login" ? "Login" : "Registration"} successful!`
-        );
-        await checkAuthStatus();
-        navigate(redirectPath, { replace: true });
-
+        toast.success(`${type} successful!`);
+  
+        // ✅ Save user info to localStorage (used in AdminRoute)
+        if (type === "Login" && response.data.user) {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        }
+  
+        // ✅ Clear form data
         if (type === "Login") {
           setLoginData({ email: "", password: "" });
         } else {
@@ -96,22 +99,22 @@ const Login = () => {
             confirmPassword: "",
           });
         }
+  
+        // ✅ Check status and navigate
+        await checkAuthStatus();
+        navigate(redirectPath, { replace: true });
+  
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("An unexpected error occurred. Please try again.");
-        console.error(`${type} Error:`, error);
-      }
+      const message =
+        error?.response?.data?.message || "An unexpected error occurred.";
+      toast.error(message);
+      console.error(`${type} Error:`, error);
     }
   };
+  
 
   const handleLoginSubmit = (e) => handleAuthSubmit(e, "Login");
   const handleRegisterSubmit = (e) => handleAuthSubmit(e, "Sign Up");

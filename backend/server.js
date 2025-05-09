@@ -47,4 +47,5 @@ app.use('/api/teams', teamRouter);
 app.use('/api', inviteRoutes);
 
 
+
 app.listen(port, () => console.log(`Server started on PORT: ${port}`))
