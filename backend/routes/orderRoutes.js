@@ -12,11 +12,7 @@ const router = express.Router();
 
 // Place a new order
 router.post('/place', userAuth, placeOrder);
-
-// Get all orders (protected route)
-router.get('/all', userAuth, getAllOrders);
-
-// Get orders (public, optional fallback)
+router.get('/all', userAuth, getAllOrders); // optionally restrict to admin
 router.get('/', getAllOrders);
 
 // ✅ Get order by ID

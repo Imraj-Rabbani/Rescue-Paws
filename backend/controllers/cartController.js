@@ -1,7 +1,7 @@
 import Cart from '../models/CartModel.js';
 
 export const saveUserCart = async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.userId;
   const { items } = req.body;
 
   try {
@@ -19,7 +19,7 @@ export const saveUserCart = async (req, res) => {
 };
 
 export const getUserCart = async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.userId;
 
   try {
     const cart = await Cart.findOne({ userId });

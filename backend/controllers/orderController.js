@@ -1,7 +1,6 @@
-// backend/controllers/orderController.js
+
 import Order from '../models/Order.js';
 import User from '../models/userModel.js';
-import Product from '../models/ProductModel.js'; // Import Product model
 
 // Place an order
 export const placeOrder = async (req, res) => {
@@ -16,24 +15,8 @@ export const placeOrder = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    // Fetch purchase cost for each product
-    const enrichedItems = await Promise.all(
-      items.map(async (item) => {
-        const product = await Product.findById(item._id);
-        if (!product) throw new Error(`Product not found: ${item._id}`);
-
-        return {
-          name: item.name,
-          imageUrl: item.imageUrl,
-          sellingPrice: item.sellingPrice,
-          quantity: item.quantity || 1,
-          purchaseCostAtOrderTime: product.purchaseCost
-        };
-      })
-    );
-
-    const totalPoints = enrichedItems.reduce(
-      (acc, item) => acc + item.sellingPrice * item.quantity,
+    const totalPoints = items.reduce(
+      (acc, item) => acc + item.sellingPrice * (item.quantity || 1),
       0
     ) + (donation || 0);
 
@@ -43,8 +26,8 @@ export const placeOrder = async (req, res) => {
 
     const newOrder = new Order({
       userId,
-      products: enrichedItems,
-      shippingInfo: {
+      items,
+      userInfo: {
         name,
         phone,
         address,
@@ -58,7 +41,15 @@ export const placeOrder = async (req, res) => {
 
     await newOrder.save();
 
-    // Deduct points from user
+    // Deduct stock and update products
+    for (const item of items) {
+      await Product.findOneAndUpdate(
+        { id: item.id },
+        { $inc: { stockQuantity: -item.quantity } }
+      );
+    }
+
+    // Deduct PetPoints
     user.points -= totalPoints;
     await user.save();
 
@@ -85,19 +76,15 @@ export const getAllOrders = async (req, res) => {
 };
 
 
-// Admin: Delete an order
+// Admin: Delete order
 export const deleteOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
-
     const order = await Order.findByIdAndDelete(orderId);
-
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
-
     res.status(200).json({ success: true, message: 'Order deleted successfully.' });
-
   } catch (error) {
     console.error('Error deleting order:', error);
     res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -124,7 +111,7 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
 
-    res.status(200).json({ success: true, message: 'Order status updated successfully.', order: updatedOrder });
+      res.status(200).json({ success: true, message: 'Order status updated successfully.', order: updatedOrder });
 
   } catch (error) {
     console.error('Error updating order status:', error);

@@ -1,18 +1,22 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const Cart = () => {
   const {
     cart,
     updateCartItemQuantity,
     removeFromCart,
-    isLoggedIn
+    isLoggedIn,
+    backendUrl,
+    setCart
   } = useContext(AppContext);
 
+  const [stockMap, setStockMap] = useState({});
   const [donation, setDonation] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,12 +40,46 @@ const Cart = () => {
     }
   };
 
+  // Fetch stock and sync cart quantity with actual stock
+  useEffect(() => {
+    const fetchStock = async () => {
+      const stockData = {};
+      const adjustedCart = [];
+
+      for (const item of cart) {
+        try {
+          const response = await axios.get(`${backendUrl}/api/products/${item.id}`);
+          const stockQty = response.data.stockQuantity || 0;
+          stockData[item.id] = stockQty;
+
+          if (stockQty === 0) {
+            toast.info(`${item.name} is out of stock and removed from cart.`);
+            continue;
+          }
+
+          if (item.quantity > stockQty) {
+            toast.info(`Adjusted ${item.name} quantity to ${stockQty}.`);
+            adjustedCart.push({ ...item, quantity: stockQty });
+          } else {
+            adjustedCart.push(item);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch stock for ${item.name}`, error);
+        }
+      }
+
+      setStockMap(stockData);
+      setCart(adjustedCart);
+    };
+
+    if (cart.length > 0) fetchStock();
+  }, [cart, backendUrl, setCart]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <ProductNavbar />
 
       <div className="container mx-auto py-10 flex flex-col lg:flex-row gap-6">
-        {/* Cart Items */}
         <div className="flex-1 bg-white p-6 rounded-lg shadow">
           <h2 className="text-2xl font-bold mb-4">Shopping Cart</h2>
 
@@ -54,56 +92,57 @@ const Cart = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {cart.map((item) => (
-                <div key={item.id} className="flex gap-4 border-b pb-4">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-28 h-28 object-cover rounded-lg"
-                  />
-                  <div className="flex flex-col justify-between flex-grow">
-                    <div>
-                      <h3 className="font-bold text-lg">{item.name}</h3>
-                      <p className="text-sm text-gray-600">{item.description}</p>
-                      <p className="text-sm text-green-600 mt-1">In Stock</p>
+              {cart.map((item) => {
+                const stock = stockMap[item.id] ?? 0;
+                return (
+                  <div key={item.id} className="flex gap-4 border-b pb-4">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-28 h-28 object-cover rounded-lg"
+                    />
+                    <div className="flex flex-col justify-between flex-grow">
+                      <div>
+                        <h3 className="font-bold text-lg">{item.name}</h3>
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                        <p className={`text-sm mt-1 ${stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {stock > 0 ? `In Stock (${stock})` : 'Out of Stock'}
+                        </p>
 
-                      <div className="flex items-center gap-2 text-purple-700 font-semibold mt-1">
-                        <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
-                        <span>{(item.sellingPrice * item.quantity).toFixed(2)}</span>
-                        <span>PetPoints</span>
+                        <div className="flex items-center gap-2 text-purple-700 font-semibold mt-1">
+                          <img src="/petpoints.png" alt="PetPoints" className="w-5 h-5" />
+                          <span>{(item.sellingPrice * item.quantity).toFixed(2)}</span>
+                          <span>PetPoints</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 mt-2">
+                        <label>Qty:</label>
+                        <select
+                          value={item.quantity}
+                          onChange={(e) => updateCartItemQuantity(item.id, parseInt(e.target.value))}
+                          className="border px-2 py-1 rounded"
+                          disabled={stock === 0}
+                        >
+                          {[...Array(Math.min(stock, 5)).keys()].map((_, i) => (
+                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-sm text-red-500 hover:underline"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3 mt-2">
-                      <label>Qty:</label>
-                      <select
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateCartItemQuantity(item.id, parseInt(e.target.value))
-                        }
-                        className="border px-2 py-1 rounded"
-                      >
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-sm text-red-500 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Sidebar */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
           <div className="bg-white p-6 rounded-lg shadow h-fit">
             <h3 className="text-xl font-semibold mb-4">
