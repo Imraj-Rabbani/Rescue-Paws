@@ -16,9 +16,9 @@ const ProductPage = () => {
         sellingPrice: 0,
         imageUrl: '',
         stockQuantity: 0,
-        category: '', // New field for category
-        features: [], // New field for features
-        productAddDate: new Date(), // New field for product add date
+        category: '', 
+        features: [],
+        productAddDate: new Date(), 
     });
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -43,7 +43,6 @@ const ProductPage = () => {
         setSelectedProductDetails(null);
     };
 
-    // Load products from the database on component mount
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -69,9 +68,9 @@ const ProductPage = () => {
             sellingPrice: 0,
             imageUrl: '',
             stockQuantity: 0,
-            category: '', // Reset category
-            features: [], // Reset features
-            productAddDate: new Date(), // Set initial add date
+            category: '', 
+            features: [], 
+            productAddDate: new Date(), 
         });
         setIsDialogOpen(true);
     };
@@ -144,7 +143,6 @@ const ProductPage = () => {
         }
 
     };
-    // Handler for category input change
     const handleCategoryChange = (e) => {
         const { value } = e.target;
         if (isEditing) {
@@ -153,8 +151,6 @@ const ProductPage = () => {
             setNewProduct({ ...newProduct, category: value });
         }
     };
-
-    // Handler for features input change
     const handleFeaturesChange = (e) => {
         const { value } = e.target;
         if (isEditing) {
@@ -163,7 +159,6 @@ const ProductPage = () => {
             setNewProduct({ ...newProduct, features: value.split(',').map(item => item.trim()) });
         }
     };
-
     const handleImageChange = (e) => {
         const { files } = e.target;
         if (files && files[0]) {
@@ -318,7 +313,7 @@ const ProductPage = () => {
                         </div>
                     </div>
                 </div>
-                {/* Add Product Section */}
+               
                 <div className={`mt-8 shadow-md rounded-md p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
                     <div className="flex justify-between items-start mb-4">
                         <div>
@@ -430,7 +425,7 @@ const ProductPage = () => {
                                                     required
                                                 />
                                             </div>
-                                            {/* Stock Quantity Field */}
+                                           
                                             <div className="grid grid-cols-4 items-center gap-4">
                                                 <label htmlFor="stockQuantity" className={`text-right ${isDarkMode ? 'text-gray-300' : 'text-[#664C36]'}`}>
                                                     Stock Quantity
@@ -520,7 +515,6 @@ const ProductPage = () => {
                         </div>
                     </div>
                 </div>
-                {/* Details Modal */}
                 <div className="fixed z-10 inset-0 overflow-y-auto" style={{ display: isDetailsModalOpen ? 'block' : 'none' }}>
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 backdrop-blur-md">
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -591,7 +585,6 @@ const ProductPage = () => {
                         </div>
                     </div>
                 </div>
-                {/* Delete Confirmation Modal */}
                 <div className="fixed z-10 inset-0 overflow-y-auto" style={{ display: isDeleteModalOpen ? 'block' : 'none' }}>
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 backdrop-blur-md">
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
