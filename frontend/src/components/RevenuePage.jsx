@@ -41,10 +41,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                         </button>
                     </div>
                     <div className="space-y-3">
-                        <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
-                            <span className={`${fontWeight} ${textColor}`}>Total Investment:</span>
-                            <span className={`${valueTextColor}`}> ${calculation.productDetails.find(item => item.name === 'Total Investment')?.totalValue?.toFixed(2) || '0.00'} </span>
-                        </div>
+                       
                         <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
                             <span className={`${fontWeight} ${textColor}`}>Total Orders:</span>
                             <span className={`${valueTextColor}`}> {calculation.productDetails.find(item => item.name === 'Total Orders')?.totalValue || '0'} </span>
@@ -418,9 +415,7 @@ const RevenuePage = () => {
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
         setShowCalculation(title);
-        if (title === 'Total Investment') {
-        }
-        else if (title === 'Total Revenue') {
+         if (title === 'Total Revenue') {
             setShowTotalRevenueDetails(true);
             fetchTotalRevenueOrderDetails();
         } else if (title === 'Weekly Revenue') {
@@ -546,10 +541,6 @@ const RevenuePage = () => {
                     const now = new Date();
                     const currentYear = now.getFullYear();
                     const currentMonth = now.getMonth();
-
-
-
-
                     const monthlyOrdersDetails = response.data.orders.filter(order => {
                         const createdAt = new Date(order.createdAt);
                         return createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth;
@@ -637,7 +628,7 @@ const RevenuePage = () => {
         fetchTotalPurchaseValueDetails();
         fetchAllOrdersForRevenue();
         fetchTotalRevenueOrderDetails()
-        fetchMonthlyPurchaseCost();
+        
         fetchMonthlyRevenueOrderDetails();
         fetchWeeklyRevenue();
         fetchWeeklyRevenueOrderDetails();
@@ -686,19 +677,7 @@ const RevenuePage = () => {
             <div className="flex-1 p-6">
                 <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-white' : 'text-[#64332d]'} mb-8`}><u>Revenue & Profit Overview</u></h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card title="Total Investment" onClick={() => handleCardClick("Total Investment")}>
-                        <div className="flex items-center justify-center">
-                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                            {loadingTotalPurchaseValue ? (
-                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>Loading...</p>
-                            ) : errorTotalPurchaseValue ? (
-                                <p className={`text-red-500`}>{errorTotalPurchaseValue}</p>
-                            ) : (
-                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${totalPurchaseValue ? totalPurchaseValue.toFixed(2) : '0.00'}</p>
-                            )}
-                        </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total purchase value of all products in stock.</p>
-                    </Card>
+                    
                     <Card title="Total Revenue" onClick={() => handleCardClick("Total Revenue")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
@@ -771,13 +750,7 @@ const RevenuePage = () => {
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Revenue for the current month (May 2025).</p>
                     </Card>
                 </div>
-                {showCalculation === 'Total Investment' && (
-                    <InvestmentCalculationDisplay
-                        title="Total Investment History"
-                        calculation={calculationDetails}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
+                
                 {showTotalRevenueDetails && (
                     <TotalRevenueDetailsModal
                         isOpen={showTotalRevenueDetails}
@@ -826,18 +799,7 @@ const RevenuePage = () => {
                             totalPurchaseValue: weeklyProfit,
                         }}
                         onClose={handleCloseCalculation} />)}
-                {showCalculation === 'Average Order Value' && (
-                    <InvestmentCalculationDisplay
-                        title="Average Order Value Calculation"
-                        calculation={{
-                            productDetails: [
-                                { name: 'Total Investment', totalValue: totalRevenue },
-                                { name: 'Total Orders', totalValue: totalOrdersCount },
-                                { name: 'Average Order Value', totalValue: averageOrderValue },],
-                            totalPurchaseValue: averageOrderValue,
-                        }}
-                        onClose={handleCloseCalculation} />
-                )} </div> </div>);
+                </div> </div>);
 };
 
 
