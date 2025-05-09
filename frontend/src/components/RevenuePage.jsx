@@ -4,6 +4,7 @@ import AdminNavbar from './AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
 
+
 // Reusable Card Component
 const Card = ({ title, children, className, onClick }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -15,18 +16,16 @@ const Card = ({ title, children, className, onClick }) => {
             {children}</div>);
 };
 // Calculation Modal
-const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode }) => {
+const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode, totalRevenue, orderedPurchaseCost }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
     const fontWeight = 'font-semibold';
     const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
-    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
     const totalTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]'; // Changed header text color
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F';
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
-    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
+
     if (title === "Average Order Value Calculation") {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
@@ -35,7 +34,8 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode 
                         <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
                         <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
                             <X className="w-5 h-5" />
-                        </button></div>
+                        </button>
+                    </div>
                     <div className="space-y-3">
                         <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
                             <span className={`${fontWeight} ${textColor}`}>Total Investment:</span>
@@ -49,10 +49,42 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode 
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>Average Order Value:</span>
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</span>
                         </div>
+
                     </div>
                 </div>
             </div>);
     }
+
+    if (title === "Total Profit Breakdown") {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className={`w-[90%] md:w-[400px] rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
+                        <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="space-y-3">
+                        <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
+                            <span className={`${fontWeight} ${textColor}`}>Total Revenue:</span>
+                            <span className={`${valueTextColor}`}> ${totalRevenue !== null ? totalRevenue.toFixed(2) : '0.00'} </span>
+                        </div>
+                        <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
+                            <span className={`${fontWeight} ${textColor}`}>Ordered Purchase Cost:</span>
+                            <span className={`${valueTextColor}`}> ${orderedPurchaseCost !== null ? orderedPurchaseCost.toFixed(2) : '0.00'} </span>
+                        </div>
+                        <div className={`flex justify-between ${isDarkMode ? 'bg-gray-100 dark:bg-gray-800' : 'bg-[#f6ebe3]'} py-2 px-3 rounded-md`}>
+                            <span className={`text-lg ${fontWeight} ${totalTextColor}`}>Total Profit:</span>
+                            <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${totalRevenue !== null && orderedPurchaseCost !== null ? (totalRevenue - orderedPurchaseCost).toFixed(2) : '0.00'}</span>
+                        </div>
+                        {/* You can add more detailed breakdown here if needed */}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
             <div className={`w-[90%] md:w-[600px] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
@@ -111,7 +143,6 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
     const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
     const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
-
     if (!isOpen) {
         return null;
     }
@@ -176,6 +207,7 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
     );
 };
 
+
 // Monthly Revenue Details Modal
 const MonthlyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, error, isDarkMode }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
@@ -188,7 +220,6 @@ const MonthlyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, er
     const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
     const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
-
     if (!isOpen) return null;
     if (loading) {
         return (
@@ -212,7 +243,6 @@ const MonthlyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, er
             </div>
         );
     }
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
             <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
@@ -235,7 +265,7 @@ const MonthlyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, er
                         </thead>
                         <tbody>
                             {orderDetails.map((order, index) => (
-                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}> 
+                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleDateString()}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
@@ -270,7 +300,6 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
     const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
     const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
-
     if (!isOpen) return null;
     if (loading) {
         return (
@@ -317,7 +346,7 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
                             {orderDetails.map((order, index) => {
                                 const createdAt = new Date(order.createdAt);
                                 const date = createdAt.toLocaleDateString();
-                                const day = createdAt.toLocaleDateString('en-US', { weekday: 'long' }); 
+                                const day = createdAt.toLocaleDateString('en-US', { weekday: 'long' });
                                 return (
                                     <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
                                         <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
@@ -344,13 +373,11 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
         </div>
     );
 };
-
 const RevenuePage = () => {
     const { isDarkMode } = useContext(DarkmodeContext);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('Revenue');
     const [orders, setOrders] = useState([]);
-    const [totalRevenue, setTotalRevenue] = useState(null);
     const [showTotalRevenueDetails, setShowTotalRevenueDetails] = useState(false);
     const [totalRevenueOrderDetails, setTotalRevenueOrderDetails] = useState([]);
     const [loadingTotalRevenueDetails, setLoadingTotalRevenueDetails] = useState(false);
@@ -377,6 +404,7 @@ const RevenuePage = () => {
     const [showMonthlyRevenueDetails, setShowMonthlyRevenueDetails] = useState(false);
     const [monthlyRevenueOrderDetails, setMonthlyRevenueOrderDetails] = useState([]);
     const [loadingMonthlyRevenueDetails, setLoadingMonthlyRevenueDetails] = useState(false);
+    const [totalRevenue, setTotalRevenue] = useState(null);
     const [errorMonthlyRevenueDetails, setErrorMonthlyRevenueDetails] = useState(null);
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
@@ -390,9 +418,12 @@ const RevenuePage = () => {
         } else if (title === 'Monthly Revenue') {
             setShowMonthlyRevenueDetails(true);
             fetchMonthlyRevenueOrderDetails();
+        } else if (title === 'Average Order Value') {
+            // Open the modal to show calculation details
+        } else if (title === 'Total Profit') {
+            // Open the modal to show total profit breakdown
         }
     };
-
     useEffect(() => {
         const fetchTotalPurchaseValueDetails = async () => {
             setLoadingTotalPurchaseValue(true);
@@ -413,7 +444,6 @@ const RevenuePage = () => {
                 setLoadingTotalPurchaseValue(false);
             }
         };
-
         const fetchTotalRevenueOrderDetails = async () => {
             setLoadingTotalRevenueDetails(true);
             setErrorTotalRevenueDetails(null);
@@ -442,6 +472,7 @@ const RevenuePage = () => {
         const fetchAllOrdersForRevenue = async () => {
             setLoadingTotalRevenue(true);
             setErrorTotalRevenue(null);
+            console.log("Fetching all orders for revenue calculation...");
             try {
                 const response = await axios.get(`${backendUrl}/api/orders/all`, {
                     headers: {
@@ -449,83 +480,64 @@ const RevenuePage = () => {
                     },
                     withCredentials: true,
                 });
-                console.log("Orders API Response:", response.data);
                 if (response.data?.success && response.data.orders) {
-                    console.log("Fetched Orders:", response.data.orders);
-                    setOrders(response.data.orders);
-                    const calculatedTotalRevenue = response.data.orders.reduce((sum, order) => {
-                        console.log("Current Order Total Points:", order.totalPoints);
-                        return sum + (order.totalPoints || 0);
-                    }, 0);
-                    console.log("Calculated Total Revenue (from totalPoints):", calculatedTotalRevenue);
-                    setTotalRevenue(calculatedTotalRevenue);
-                    // Calculate Ordered Purchase Cost
+                    const fetchedOrders = response.data.orders;
+                    setOrders(fetchedOrders);
+                    let calculatedTotalRevenue = 0;
                     let calculatedOrderedPurchaseCost = 0;
-                    for (const order of response.data.orders) {
-                        console.log("Processing Order ID:", order._id);
-                        if (order.orderItems && Array.isArray(order.orderItems)) {
-                            for (const item of order.orderItems) {
-                                console.log("Processing Order Item:", item);
-                                // Assuming your order item has productId and quantity
-                                const productResponse = await axios.get(`${backendUrl}/api/products/${item.productId}`);
-                                console.log("Product Details Response:", productResponse.data);
-                                if (productResponse.data?.success && productResponse.data.product) {
-                                    const purchaseCost = productResponse.data.product.purchaseCost || 0;
-                                    const quantity = item.quantity || 0;
-                                    const itemPurchaseCost = purchaseCost * quantity;
-                                    console.log(`Item: ${productResponse.data.product.name}, Purchase Cost: ${purchaseCost}, Quantity: ${quantity}, Item Purchase Cost: ${itemPurchaseCost}`);
-                                    calculatedOrderedPurchaseCost += itemPurchaseCost;
-                                } else {
-                                    console.warn(`Could not fetch product details for ID: ${item.productId}`);
+                    for (const order of fetchedOrders) {
+                        calculatedTotalRevenue += (order.totalPoints || 0);
+                        if (order.items && Array.isArray(order.items)) {
+                            for (const item of order.items) {
+                                try {
+                                    const productResponse = await axios.get(`${backendUrl}/api/products/${item._id}`);
+                                    if (productResponse.data?.success && productResponse.data.product) {
+                                        const purchaseCost = productResponse.data.product.purchaseCost || 0;
+                                        const quantity = item.quantity || 0;
+                                        const itemPurchaseCost = purchaseCost * quantity;
+                                        calculatedOrderedPurchaseCost += itemPurchaseCost;
+                                        console.warn(`Could not fetch product details for ID: ${item._id}. Skipping cost calculation for this item.`);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching product details for ID: ${item._id}`, error);
                                 }
                             }
                         }
-                        console.log("Ordered Purchase Cost for Order ID:", order._id, "is", calculatedOrderedPurchaseCost);
                     }
+                    setTotalRevenue(calculatedTotalRevenue);
                     setOrderedPurchaseCost(calculatedOrderedPurchaseCost);
-                    console.log("Calculated Total Ordered Purchase Cost:", calculatedOrderedPurchaseCost);
-
                 } else {
-                    setErrorTotalRevenue(response.data?.message || 'Failed to fetch orders for revenue calculation.');
+                    console.error("Failed to fetch orders. Response data:", response.data);
+                    setErrorTotalRevenue(response.data?.message || 'Failed to fetch orders.');
                 }
             } catch (error) {
-                console.error('Error fetching orders for revenue:', error);
-                setErrorTotalRevenue(error.message || 'An error occurred while fetching orders for revenue.');
+                console.error('Error fetching orders:', error);
+                setErrorTotalRevenue(error.message || 'An error occurred while fetching orders.');
             } finally {
                 setLoadingTotalRevenue(false);
+                console.log("Order fetching and revenue/cost calculation complete. Loading state set to false.");
             }
         };
-        const fetchMonthlyRevenue = async () => {
-            setLoadingMonthlyRevenue(true);
-            setErrorMonthlyRevenue(null);
+
+        const fetchMonthlyPurchaseCost = async () => {
+            setLoadingMonthlyPurchaseCost(true);
+            setErrorMonthlyPurchaseCost(null);
             try {
-                const response = await axios.get(`${backendUrl}/api/orders/all`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                    withCredentials: true,
-                });
-                console.log("All Orders Response for Monthly Revenue:", response.data);
-                if (response.data?.success && response.data.orders) {
-                    const now = new Date();
-                    const currentYear = now.getFullYear();
-                    const currentMonth = now.getMonth();
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
 
-                    const monthlyOrders = response.data.orders.filter(order => {
-                        const createdAt = new Date(order.createdAt);
-                        return createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth;
-                    });
-
-                    const calculatedMonthlyRevenue = monthlyOrders.reduce((sum, order) => sum + (order.totalPoints || 0), 0);
-                    setMonthlyRevenue(calculatedMonthlyRevenue);
-                } else {
-                    setErrorMonthlyRevenue(response.data?.message || 'Failed to fetch orders for monthly revenue calculation.');
+                const response = await fetch(`http://localhost:4000/api/products/monthly-purchase-cost?year=${year}&month=${month}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const data = await response.json();
+                setMonthlyPurchaseCostData(data);
             } catch (error) {
-                console.error('Error fetching orders for monthly revenue:', error);
-                setErrorMonthlyRevenue(error?.message || 'An error occurred while fetching orders for monthly revenue.');
+                console.error('Error fetching monthly purchase cost:', error);
+                setErrorMonthlyPurchaseCost('Failed to fetch monthly purchase cost.');
             } finally {
-                setLoadingMonthlyRevenue(false);
+                setLoadingMonthlyPurchaseCost(false);
             }
         };
         const fetchMonthlyRevenueOrderDetails = async () => {
@@ -543,6 +555,7 @@ const RevenuePage = () => {
                     const now = new Date();
                     const currentYear = now.getFullYear();
                     const currentMonth = now.getMonth();
+
 
                     const monthlyOrdersDetails = response.data.orders.filter(order => {
                         const createdAt = new Date(order.createdAt);
@@ -573,7 +586,7 @@ const RevenuePage = () => {
                 if (response.data?.success && response.data.orders) {
                     const now = new Date();
                     const startOfWeek = new Date(now);
-                    startOfWeek.setDate(now.getDate() - now.getDay()); 
+                    startOfWeek.setDate(now.getDate() - now.getDay());
                     startOfWeek.setHours(0, 0, 0, 0);
                     const endOfWeek = new Date(startOfWeek);
                     endOfWeek.setDate(startOfWeek.getDate() + 6);
@@ -582,7 +595,6 @@ const RevenuePage = () => {
                         const createdAt = new Date(order.createdAt);
                         return createdAt >= startOfWeek && createdAt <= endOfWeek;
                     });
-
                     const calculatedWeeklyRevenue = weeklyOrders.reduce((sum, order) => sum + (order.totalPoints || 0), 0);
                     setWeeklyRevenue(calculatedWeeklyRevenue);
                 } else {
@@ -595,45 +607,44 @@ const RevenuePage = () => {
                 setLoadingWeeklyRevenue(false);
             }
         };
-
-       const fetchWeeklyRevenueOrderDetails = async () => {
-    setLoadingWeeklyRevenueDetails(true);
-    setErrorWeeklyRevenueDetails(null);
-    try {
-        const response = await axios.get(`${backendUrl}/api/orders/all`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            },
-            withCredentials: true,
-        });
-        console.log("All Orders Response for Weekly Revenue Details:", response.data);
-        if (response.data?.success && response.data.orders) {
-            const now = new Date();
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            startOfWeek.setHours(0, 0, 0, 0);
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
-            const weeklyOrdersDetails = response.data.orders.filter(order => {
-                const createdAt = new Date(order.createdAt);
-                return createdAt >= startOfWeek && createdAt <= endOfWeek;
-            });
-            setWeeklyRevenueOrderDetails(weeklyOrdersDetails);
-        } else {
-            setErrorWeeklyRevenueDetails(response.data?.message || 'Failed to fetch weekly order details.');
-        }
-    } catch (error) {
-        console.error('Error fetching weekly order details:', error);
-        setErrorWeeklyRevenueDetails(error?.message || 'An error occurred while fetching weekly order details.');
-    } finally {
-        setLoadingWeeklyRevenueDetails(false);
-    }
-};
+        const fetchWeeklyRevenueOrderDetails = async () => {
+            setLoadingWeeklyRevenueDetails(true);
+            setErrorWeeklyRevenueDetails(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Weekly Revenue Details:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    const weeklyOrdersDetails = response.data.orders.filter(order => {
+                        const createdAt = new Date(order.createdAt);
+                        return createdAt >= startOfWeek && createdAt <= endOfWeek;
+                    });
+                    setWeeklyRevenueOrderDetails(weeklyOrdersDetails);
+                } else {
+                    setErrorWeeklyRevenueDetails(response.data?.message || 'Failed to fetch weekly order details.');
+                }
+            } catch (error) {
+                console.error('Error fetching weekly order details:', error);
+                setErrorWeeklyRevenueDetails(error?.message || 'An error occurred while fetching weekly order details.');
+            } finally {
+                setLoadingWeeklyRevenueDetails(false);
+            }
+        };
         fetchTotalPurchaseValueDetails();
         fetchAllOrdersForRevenue();
         fetchTotalRevenueOrderDetails()
-        fetchMonthlyRevenue();
+        fetchMonthlyPurchaseCost();
         fetchMonthlyRevenueOrderDetails();
         fetchWeeklyRevenue();
         fetchWeeklyRevenueOrderDetails();
@@ -676,9 +687,9 @@ const RevenuePage = () => {
                 setActiveTab={setActiveTab}
             />
 
+
             <div className="flex-1 p-6">
                 <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-white' : 'text-[#64332d]'} mb-8`}><u>Revenue & Profit Overview</u></h2>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <Card title="Total Investment" onClick={() => handleCardClick("Total Investment")}>
                         <div className="flex items-center justify-center">
@@ -706,13 +717,16 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total revenue generated from all orders.</p>
                     </Card>
-                    <Card title="Total Profit" onClick={() => handleCardClick("Total Profit")}>
+                    <Card title="Total Profit" onClick={() => handleCardClick('Total Profit')}>
                         <div className="flex items-center justify-center">
-                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${totalProfit.toFixed(2)}</p>
+                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : (totalRevenue !== null && orderedPurchaseCost !== null && (totalRevenue - orderedPurchaseCost) > 0 ? 'text-[#2E7D32]' : 'text-[#F44336]')}`}>
+                                ${totalRevenue !== null && orderedPurchaseCost !== null ? (totalRevenue - orderedPurchaseCost).toFixed(2) : '0.00'}
+                            </p>
                         </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total profit after deducting costs.</p>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Net earnings after deducting product costs.</p>
                     </Card>
+
                     <Card title="Average Order Value" onClick={() => handleCardClick("Average Order Value")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
@@ -720,13 +734,7 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Average revenue generated per order.</p>
                     </Card>
-                    <Card title="Monthly Profit" onClick={() => handleCardClick("Monthly Profit")}>
-                        <div className="flex items-center justify-center">
-                            <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>{monthlyProfit.toFixed(2)}</p>
-                        </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Profit for the current month (April 2025).</p>
-                    </Card>
+
                     <Card title="Weekly Revenue" onClick={() => handleCardClick("Weekly Revenue")}>
                         <div className="flex items-center justify-center">
                             <CircleDollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
@@ -743,11 +751,14 @@ const RevenuePage = () => {
                     </Card>
                     <Card title="Ordered Purchase Cost" onClick={() => handleCardClick("Ordered Purchase Cost")}>
                         <div className="flex items-center justify-center">
-                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${orderedPurchaseCost.toFixed(2)}</p>
+                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-lime-400' : 'text-lime-600'}`} />
+                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>
+                                ${orderedPurchaseCost !== null ? orderedPurchaseCost.toFixed(2) : '0.00'}
+                            </p>
                         </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total purchase cost of all items in the placed orders.</p>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total cost of products in all orders.</p>
                     </Card>
+
                     <Card title="Monthly Revenue" onClick={() => handleCardClick("Monthly Revenue")}>
                         <div className="flex items-center justify-center">
                             <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
@@ -780,17 +791,11 @@ const RevenuePage = () => {
                 )}
                 {showCalculation === 'Total Profit' && (
                     <InvestmentCalculationDisplay
-                        title="Total Profit Calculation"
-                        calculation={{
-                            productDetails: orders.map(o => ({
-                                name: `Order ID: ${o.id}`,
-                                purchaseCost: o.cost,
-                                stockQuantity: 1,
-                                totalValue: o.revenue - o.cost,
-                            })),
-                            totalPurchaseValue: totalProfit,
-                        }}
-                        onClose={handleCloseCalculation}
+                        title="Total Profit Breakdown"
+                        onClose={() => setShowCalculation(null)}
+                        isDarkMode={isDarkMode}
+                        totalRevenue={totalRevenue}
+                        orderedPurchaseCost={orderedPurchaseCost}
                     />
                 )}
                 <MonthlyRevenueDetailsModal
@@ -801,21 +806,6 @@ const RevenuePage = () => {
                     error={errorMonthlyRevenueDetails}
                     isDarkMode={isDarkMode}
                 />
-                {showCalculation === 'Monthly Profit' && (
-                    <InvestmentCalculationDisplay
-                        title="Monthly Profit Calculation"
-                        calculation={{
-                            productDetails: monthlyOrders.map(o => ({
-                                name: `Order ID: ${o.id}`,
-                                purchaseCost: o.cost,
-                                stockQuantity: 1,
-                                totalValue: o.revenue - o.cost,
-                            })),
-                            totalPurchaseValue: monthlyProfit,
-                        }}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
                 <WeeklyRevenueDetailsModal
                     isOpen={showWeeklyRevenueDetails}
                     onClose={() => setShowWeeklyRevenueDetails(false)}

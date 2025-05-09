@@ -101,7 +101,7 @@ const OrderPage = () => {
 
     const confirmDeleteOrder = async () => {
         try {
-            const response = await axios.delete(`<span class="math-inline">\{backendUrl\}/api/orders/</span>{orderToDelete}`, {
+            const response = await axios.delete(`${backendUrl}/api/orders/${orderToDelete}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 },

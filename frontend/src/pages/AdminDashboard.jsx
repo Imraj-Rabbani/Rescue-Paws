@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Boxes, ClipboardList, ArrowRight, ShoppingCart, AlertTriangle, CheckCircle, GripVertical, CreditCard, DollarSign,TrendingUp,PiggyBank} from 'lucide-react';
+import { Boxes, ClipboardList, ArrowRight, ShoppingCart, AlertTriangle, CheckCircle, GripVertical, CreditCard, DollarSign, TrendingUp, PiggyBank } from 'lucide-react';
 import AdminNavbar from '../components/AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
 
+
 // Reusable Card Component with hover effects and consistent styling
 const Card = ({ title, children, className, onClick }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
+
 
     return (
         <motion.div
@@ -24,6 +26,7 @@ const Card = ({ title, children, className, onClick }) => {
     );
 };
 
+
 // Styled Link Component
 const StyledLink = ({ to, children, className }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -37,10 +40,12 @@ const StyledLink = ({ to, children, className }) => {
     );
 };
 
+
 // Overview Card with icon and value animation
 const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
     const [displayValue, setDisplayValue] = useState(0);
     const { isDarkMode } = useContext(DarkmodeContext);
+
 
     // Animate the value from 0 to the actual value
     useEffect(() => {
@@ -54,16 +59,19 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
                 const progress = Math.min(currentFrame / totalFrames, 1);
                 setDisplayValue(Math.ceil(value * progress));
 
+
                 if (progress >= 1) {
                     clearInterval(interval);
                 }
             }, 1000 / frameRate);
+
 
             return () => clearInterval(interval);
         } else {
             setDisplayValue(value);
         }
     }, [value]);
+
 
     return (
         <Card
@@ -86,6 +94,7 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
     );
 };
 
+
 // Analytics Card with a title and content area
 const AnalyticsCard = ({ title, children, chartRef }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -99,10 +108,12 @@ const AnalyticsCard = ({ title, children, chartRef }) => {
     );
 };
 
+
 // Draggable Panel Component
 const DraggablePanel = ({ title, children }) => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const { isDarkMode } = useContext(DarkmodeContext);
+
 
     return (
         <motion.div
@@ -132,6 +143,7 @@ const DraggablePanel = ({ title, children }) => {
     );
 };
 
+
 // --- Main Component ---
 const AdminDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -151,10 +163,16 @@ const AdminDashboard = () => {
     const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true);
     const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null);
     const [totalRevenue, setTotalRevenue] = useState('Loading...');
-    const [totalInvestment, setTotalInvestment] = useState('Loading...');
+    const [errorTotalRevenueDetails, setErrorTotalRevenueDetails] = useState(null);
+    const [loadingTotalRevenue, setLoadingTotalRevenue] = useState(true);
+    const [errorTotalRevenue, setErrorTotalRevenue] = useState(null);
+    const [orderedPurchaseCost, setOrderedPurchaseCost] = useState(0);
     const [weeklyRevenueData, setWeeklyRevenueData] = useState([]);
     const [loadingWeeklyRevenueChart, setLoadingWeeklyRevenueChart] = useState(true);
     const [errorWeeklyRevenueChart, setErrorWeeklyRevenueChart] = useState(null);
+    const [totalProfit, setTotalProfit] = useState(0);
+    const [averageOrderValue, setAverageOrderValue] = useState('Loading...'); // State for AOV
+    const [errorAverageOrderValue, setErrorAverageOrderValue] = useState(null); // Error state for AOV
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
@@ -198,6 +216,7 @@ const AdminDashboard = () => {
         }
     }, [orders]);
 
+
     // Fetch most ordered products
     useEffect(() => {
         const fetchMostOrdered = async () => {
@@ -227,6 +246,7 @@ const AdminDashboard = () => {
                 });
                 if (res.data?.success) {
                     setOrders(res.data.orders);
+
 
                     const calculatedTotalRevenue = res.data.orders.reduce((sum, order) => {
                         return sum + (order.totalPoints || 0);
@@ -270,9 +290,7 @@ const AdminDashboard = () => {
                     const endOfWeek = new Date(startOfWeek);
                     endOfWeek.setDate(startOfWeek.getDate() + 6);
                     endOfWeek.setHours(23, 59, 59, 999);
-
                     const weeklyRevenueByDay = Array(7).fill(0);
-
                     response.data.orders.forEach(order => {
                         const createdAt = new Date(order.createdAt);
                         if (createdAt >= startOfWeek && createdAt <= endOfWeek) {
@@ -280,13 +298,11 @@ const AdminDashboard = () => {
                             weeklyRevenueByDay[dayIndex] += order.totalPoints || 0;
                         }
                     });
-
                     // Format data for rendering the chart
                     const formattedData = weeklyRevenueByDay.map((revenue, index) => ({
                         day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index],
                         revenue
                     }));
-
                     setWeeklyRevenueData(formattedData);
                 } else {
                     setErrorWeeklyRevenueChart(response.data?.message || 'Failed to fetch orders for weekly revenue chart.');
@@ -298,90 +314,106 @@ const AdminDashboard = () => {
                 setLoadingWeeklyRevenueChart(false);
             }
         };
-
         fetchWeeklyRevenueForChart();
     }, [backendUrl]);
 
+    // Calculate Average Order Value
+    useEffect(() => {
+        if (orders && orders.length > 0) {
+            try {
+                const totalRevenueValue = orders.reduce((sum, order) => sum + (order.totalPoints || 0), 0);
+                const orderCount = orders.length;
+                const aov = totalRevenueValue / orderCount;
+                setAverageOrderValue(aov.toFixed(2));
+                setErrorAverageOrderValue(null);
+            } catch (error) {
+                console.error("Error calculating Average Order Value:", error);
+                setAverageOrderValue('Error');
+                setErrorAverageOrderValue("Failed to calculate Average Order Value.");
+            }
+        } else if (orders && orders.length === 0) {
+            setAverageOrderValue('0.00');
+            setErrorAverageOrderValue(null);
+        } else {
+            setAverageOrderValue('Loading...');
+            setErrorAverageOrderValue(null);
+        }
+    }, [orders]);
+
     // Fetched recentOrders data from orders
     const recentOrders = orders ? orders.slice(0, 3) : [];
-
     // Placeholder chart data
-    const volunteerPurchaseActivity = [10, 20, 15, 25, 30, 28, 35];
-
+    const profitTrendsThisWeek = [10, 20, 15, 25, 30, 28, 35];
     const renderBarChart = (data, title) => {
-    if (loadingWeeklyRevenueChart) {
-        return <div className="text-center text-gray-500">Loading weekly revenue data...</div>;
-    }
-
-    if (errorWeeklyRevenueChart) {
-        return <div className="text-center text-red-500">Error loading weekly revenue data.</div>;
-    }
-    if (!data || data.length === 0) {
-        return <div className="text-center text-gray-400">No weekly revenue data available.</div>;
-    }
-    const chartHeight = 200;
-    const barWidth = 30; 
-    const barGap = 20;
-    const maxRevenue = Math.max(...data.map(point => point.revenue), 100);
-    return (
-        <div className="h-[250px] w-full relative" ref={chartRef}>
-            <svg className="absolute inset-0 w-full h-full">
-                <g transform="translate(2, 40)"> 
-                    {data.map((point, index) => {
-                        const barHeight = (point.revenue / maxRevenue) * 120;
-                        const x = index * (barWidth + barGap);
-                        const y = chartHeight - barHeight - 40;
-
-                        return (
-                            <g key={index}>
-                                <text
-                                    x={x + barWidth / 2}
-                                    y={y - 10}
-                                    fontSize="12"
-                                    fontWeight = "bold"
-                                    fill={isDarkMode ? "white" : "black"}
-                                    textAnchor="middle"
-                                >
-                                    {point.revenue.toFixed(2)}
-                                </text>
-                                <rect
-                                    x={x}
-                                    y={y}
-                                    width={barWidth}
-                                    height={barHeight}
-                                    fill="#A2574F"
-                                    rx="6"
-                                />
-                                <text
-                                    x={x + barWidth / 2}
-                                    y={y + barHeight / 2 + 5}
-                                    fontSize="10"
-                                    fill="white"
-                                    textAnchor="middle"
-                                >
-                                    {point.day}
-                                </text>
-                            </g>
-                        );
-                    })}
-                </g>
-            </svg>
-        </div>
-    );
-};
-
-
+        if (loadingWeeklyRevenueChart) {
+            return <div className="text-center text-gray-500">Loading weekly revenue data...</div>;
+        }
+        if (errorWeeklyRevenueChart) {
+            return <div className="text-center text-red-500">Error loading weekly revenue data.</div>;
+        }
+        if (!data || data.length === 0) {
+            return <div className="text-center text-gray-400">No weekly revenue data available.</div>;
+        }
+        const chartHeight = 200;
+        const barWidth = 30;
+        const barGap = 20;
+        const maxRevenue = Math.max(...data.map(point => point.revenue), 100);
+        return (
+            <div className="h-[250px] w-full relative" ref={chartRef}>
+                <svg className="absolute inset-0 w-full h-full">
+                    <g transform="translate(2, 40)">
+                        {data.map((point, index) => {
+                            const barHeight = (point.revenue / maxRevenue) * 120;
+                            const x = index * (barWidth + barGap);
+                            const y = chartHeight - barHeight - 40;
+                            return (
+                                <g key={index}>
+                                    <text
+                                        x={x + barWidth / 2}
+                                        y={y - 10}
+                                        fontSize="12"
+                                        fontWeight="bold"
+                                        fill={isDarkMode ? "white" : "black"}
+                                        textAnchor="middle"
+                                    >
+                                        {point.revenue.toFixed(2)}
+                                    </text>
+                                    <rect
+                                        x={x}
+                                        y={y}
+                                        width={barWidth}
+                                        height={barHeight}
+                                        fill="#A2574F"
+                                        rx="6"
+                                    />
+                                    <text
+                                        x={x + barWidth / 2}
+                                        y={y + barHeight / 2 + 5}
+                                        fontSize="10"
+                                        fill="white"
+                                        textAnchor="middle"
+                                    >
+                                        {point.day}
+                                    </text>
+                                </g>
+                            );
+                        })}
+                    </g>
+                </svg>
+            </div>
+        );
+    };
     // Function to render DONUT chart
     const fixedColors = ['#FFD700', '#9B59B6', '#FF69B4', '#1E90FF', '#2ECC71'];
     const renderDonutChart = (data, title) => {
         if (!data || data.length === 0)
             return <div className="text-gray-400 text-center">No data to display</div>;
 
+
         const top5Data = data.slice(0, 5).map(item => ({
             ...item,
             orders: Number(item.orders) || 0,
         }));
-
         const total = top5Data.reduce((acc, item) => acc + item.orders, 0);
         if (total === 0)
             return <div className="text-gray-400 text-center">No orders to display</div>;
@@ -442,6 +474,7 @@ const AdminDashboard = () => {
                     <circle cx={chartRadius} cy={chartRadius} r={holeRadius} fill="white" />
                 </svg>
 
+
                 {/* Legend */}
                 <div className={`absolute top-0 right-7 text-[10px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
                     {top5Data.map((item, index) => (
@@ -456,10 +489,12 @@ const AdminDashboard = () => {
                 </div></div>);
     };
 
+
     // Function to render a simple line chart
     const renderLineChart = (data, title) => {
         const availableWidth = chartRef?.current?.offsetWidth || 200;
         if (!chartRef.current) return null;
+
 
         const maxDataValue = Math.max(...data);
         const chartHeight = 150;
@@ -470,6 +505,7 @@ const AdminDashboard = () => {
             const y = chartHeight - (value / maxDataValue) * chartHeight;
             return { x, y, value };
         });
+
 
         // Generate SVG path string
         let path = `M ${points[0].x} ${points[0].y}`;
@@ -539,6 +575,7 @@ const AdminDashboard = () => {
         );
     };
 
+
     // Fetch product count from the database
     useEffect(() => {
         const fetchProductCount = async () => {
@@ -564,6 +601,7 @@ const AdminDashboard = () => {
         fetchProductCount();
     }, []);
 
+
     // Fetch low stock products
     useEffect(() => {
         const fetchLowStockProducts = async () => {
@@ -579,29 +617,63 @@ const AdminDashboard = () => {
                 setLowStockProducts([]);
             }
         };
-
         fetchLowStockProducts();
     }, []);
-
     // Fetch total investment (total purchase cost)
     useEffect(() => {
-        const fetchTotalInvestment = async () => {
+        const fetchAllOrdersForRevenue = async () => {
+            setLoadingTotalRevenue(true);
+            setErrorTotalRevenue(null);
+            console.log("Fetching all orders for revenue and cost calculation...");
             try {
-                const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-                const response = await fetch(`${backendUrl}/api/products/total-purchase-value/details`);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to fetch total investment: ${response.status} - ${errorText}`);
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                if (response.data?.success && response.data.orders) {
+                    const fetchedOrders = response.data.orders;
+                    setOrders(fetchedOrders);
+                    let calculatedTotalRevenue = 0;
+                    let calculatedOrderedPurchaseCost = 0;
+                    for (const order of fetchedOrders) {
+                        calculatedTotalRevenue += (order.totalPoints || 0);
+                        if (order.items && Array.isArray(order.items)) {
+                            for (const item of order.items) {
+                                try {
+                                    const productResponse = await axios.get(`${backendUrl}/api/products/${item._id}`);
+                                    if (productResponse.data?.success && productResponse.data.product) {
+                                        const purchaseCost = productResponse.data.product.purchaseCost || 0;
+                                        const quantity = item.quantity || 0;
+                                        const itemPurchaseCost = purchaseCost * quantity;
+                                        calculatedOrderedPurchaseCost += itemPurchaseCost;
+                                    } else {
+                                        console.warn(`Could not fetch product details for ID: ${item._id}. Skipping cost calculation for this item.`);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching product details for ID: ${item._id}`, error);
+                                }
+                            }
+                        }
+                    }
+                    setTotalRevenue(calculatedTotalRevenue);
+                    setOrderedPurchaseCost(calculatedOrderedPurchaseCost);
+                    setTotalProfit(calculatedTotalRevenue - calculatedOrderedPurchaseCost); // Calculate total profit
+                } else {
+                    console.error("Failed to fetch orders. Response data:", response.data);
+                    setErrorTotalRevenue(response.data?.message || 'Failed to fetch orders.');
                 }
-                const data = await response.json();
-                setTotalInvestment(data.totalPurchaseValue);
             } catch (error) {
-                console.error("Error fetching total investment:", error);
-                setTotalInvestment('Error');
+                console.error('Error fetching orders:', error);
+                setErrorTotalRevenue(error.message || 'An error occurred while fetching orders.');
+            } finally {
+                setLoadingTotalRevenue(false);
+                console.log("Order fetching and revenue/cost calculation complete. Loading state set to false.");
             }
         };
-        fetchTotalInvestment();
-    }, []);
+        fetchAllOrdersForRevenue();
+    }, [backendUrl]);
     useEffect(() => {
         const fetchMonthlyRevenue = async () => {
             setLoadingMonthlyRevenue(true);
@@ -618,7 +690,6 @@ const AdminDashboard = () => {
                     const now = new Date();
                     const currentYear = now.getFullYear();
                     const currentMonth = now.getMonth();
-
                     const monthlyOrders = response.data.orders.filter(order => {
                         const createdAt = new Date(order.createdAt);
                         return createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth;
@@ -652,8 +723,7 @@ const AdminDashboard = () => {
                         <DraggablePanel title="Dashboard Notes">
                             <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-[#664C36]'}`}>
                                 <AlertTriangle className="inline-block w-4 h-4 mr-1 text-yellow-400" />
-                                <span className="font-medium">Important:</span> This is a demo
-                                dashboard. Data is for illustrative purposes only.
+                                <span className="font-medium">Important:</span> Welcome to our Stray Paw's admin dashboard. 
                             </p>
                             <ul className={`list-disc list-inside mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-[#664C36]'}`}>
                                 <li>Click on the overview cards to view details.</li>
@@ -670,6 +740,7 @@ const AdminDashboard = () => {
                         </DraggablePanel>
                     )}
                 </AnimatePresence>
+
 
                 {activeTab === 'Dashboard' && (
                     <>
@@ -692,7 +763,6 @@ const AdminDashboard = () => {
                                 Show Notes
                             </button>
                         </div>
-
                         {/* Top Section: Overview Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <StyledLink to="/adminproducts">
@@ -717,17 +787,23 @@ const AdminDashboard = () => {
                                 icon={() => <CreditCard className={isDarkMode ? 'text-green-500 w-11 h-11' : 'text-green-600 w-11 h-11'} />}
                                 onClick={() => setActiveTab('Revenue')}
                             />
+                            <OverviewCard
+                                title="Average Order Value"
+                                value={loading ? 'Loading...' : errorAverageOrderValue ? 'Error' : averageOrderValue !== 'Loading...' ? `$${averageOrderValue}` : '$0.00'}
+                                icon={DollarSign} // Using DollarSign as a relevant icon
+                                onClick={() => console.log('Average Order Value card clicked')}
+                            />
                         </div>
                         {/* Middle Section: Analytics Panel */}
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-10 mb-10">
                             <AnalyticsCard title="Weekly Revenue" chartRef={chartRef}>
-                               {renderBarChart(weeklyRevenueData, 'Weekly Revenue')}
+                                {renderBarChart(weeklyRevenueData, 'Weekly Revenue')}
                             </AnalyticsCard>
                             <AnalyticsCard title="Most Ordered Products" chartRef={chartRef}>
                                 {renderDonutChart(mostOrderedProductsData, 'Most Ordered Products')}
                             </AnalyticsCard>
-                            <AnalyticsCard title="Volunteer Purchase Activity" chartRef={chartRef}>
-                                {renderLineChart(volunteerPurchaseActivity, 'Volunteer Purchase Activity')}
+                            <AnalyticsCard title="Profit Trends This Week" chartRef={chartRef}>
+                                {renderLineChart(profitTrendsThisWeek, 'Profit Trends This Week')}
                             </AnalyticsCard>
                         </div>
                         {/* Bottom Section: Quick Tables */}
@@ -768,22 +844,21 @@ const AdminDashboard = () => {
                             <Card title={<span><span className="text-3xl mr-1">💰</span> Financial Overview</span>} className="bg-[#e4c2a6]">
                                 <ul className="space-y-3.5 mt-2">
                                     <li className="flex items-center space-x-2">
-                                        <DollarSign className="w-6 h-6 text-[#FF8042]" />
+                                        <DollarSign className="w-6 h-6 text-[#F44336]" />
                                         <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
-                                            <span className="font-semibold">Total Investment</span> — {totalInvestment}$
+                                            <span className="font-semibold">Ordered Purchase Cost</span> — {orderedPurchaseCost?.toFixed(2)}$
                                         </span>
                                     </li>
-
                                     <li className="flex items-center space-x-2">
                                         <TrendingUp className="w-6 h-6 text-[#00C49F]" />
                                         <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
-                                            <span className="font-semibold">Total Revenue</span> — {totalRevenue}$
+                                            <span className="font-semibold">Total Revenue</span> — {typeof totalRevenue === 'number' ? `${totalRevenue.toFixed(2)}$` : totalRevenue}
                                         </span>
                                     </li>
                                     <li className="flex items-center space-x-2">
                                         <PiggyBank className="w-6 h-6 text-[#AF19FF]" />
                                         <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
-                                            <span className="font-semibold">Net Profit</span> — Calculating...
+                                            <span className="font-semibold">Net Profit</span> — {totalProfit?.toFixed(2)}$
                                         </span>
                                     </li>
                                 </ul>
@@ -819,10 +894,12 @@ const AdminDashboard = () => {
                         </StyledLink>
                     </div>
                 )}
-
             </div>
         </div >
     );
 };
 export default AdminDashboard;
+
+
+
 
