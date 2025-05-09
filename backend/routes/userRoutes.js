@@ -11,5 +11,4 @@ userRouter.put('/add-points',userAuth, addPoints)
 userRouter.post('/cart', userAuth, saveUserCart);
 userRouter.get('/cart', userAuth, getUserCart);
 
-
 export default userRouter;

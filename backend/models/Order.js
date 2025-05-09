@@ -1,4 +1,3 @@
-// backend/models/Order.js
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
@@ -12,7 +11,8 @@ const orderSchema = new mongoose.Schema({
       name: String,
       imageUrl: String,
       quantity: Number,
-      sellingPrice: Number
+      sellingPrice: Number,
+      purchaseCostAtOrderTime: Number // <-- Added here
     }
   ],
   userInfo: {

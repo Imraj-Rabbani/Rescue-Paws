@@ -1,17 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Boxes,
-    ClipboardList,
-    ArrowRight,
-    Users,
-    ShoppingCart,
-    AlertTriangle,
-    CheckCircle,
-    GripVertical,
-    CreditCard
-} from 'lucide-react';
+import { Boxes, ClipboardList, ArrowRight, ShoppingCart, AlertTriangle, CheckCircle, GripVertical, CreditCard, DollarSign,TrendingUp,PiggyBank} from 'lucide-react';
 import AdminNavbar from '../components/AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
@@ -151,165 +141,319 @@ const AdminDashboard = () => {
     const { isDarkMode } = useContext(DarkmodeContext);
     const [totalProducts, setTotalProducts] = useState(0);
     const [lowStockProducts, setLowStockProducts] = useState([]);
-
+    const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+    const [mostOrderedProductsData, setMostOrderedProductsData] = useState([]);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+    const [loading, setLoading] = useState(false);
+    const [fetchError, setFetchError] = useState(null);
+    const [orders, setOrders] = useState(null);
+    const [monthlyRevenue, setMonthlyRevenue] = useState(null);
+    const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true);
+    const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null);
+    const [totalRevenue, setTotalRevenue] = useState('Loading...');
+    const [totalInvestment, setTotalInvestment] = useState('Loading...');
+    const [weeklyRevenueData, setWeeklyRevenueData] = useState([]);
+    const [loadingWeeklyRevenueChart, setLoadingWeeklyRevenueChart] = useState(true);
+    const [errorWeeklyRevenueChart, setErrorWeeklyRevenueChart] = useState(null);
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
-    // Sample data for demonstration
-    const recentOrders = [
-        { id: 123, volunteer: 'Volunteer A', status: 'Pending', date: '2024-07-28' },
-        { id: 124, volunteer: 'Volunteer B', status: 'Shipped', date: '2024-07-27' },
-        { id: 125, volunteer: 'Volunteer C', status: 'Delivered', date: '2024-07-26' },
-    ];
+    //fetch all orders
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            setFetchError(null);
+            try {
+                const res = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                if (res.data?.success) {
+                    setOrders(res.data.orders);
+                } else {
+                    const errorMessage = res.data?.message || res.data?.error || 'Failed to fetch orders.';
+                    setFetchError(errorMessage);
+                }
+            } catch (err) {
+                const message =
+                    err.response?.data?.message ||
+                    (err.response ? `Status: ${err.response.status}` :
+                        err.request ? 'No server response.' :
+                            err.message || 'Request error.');
+                setFetchError(message);
+            }
+            setLoading(false);
+        };
+        fetchOrders();
+    }, [backendUrl]);
 
-    const newVolunteerSignups = [
-        { name: 'Volunteer D', area: 'Area 1', date: '2024-07-28' },
-        { name: 'Volunteer E', area: 'Area 2', date: '2024-07-27' },
-        { name: 'Volunteer F', area: 'Area 3', date: '2024-07-26' },
-    ];
+    //calculate pending order count
+    useEffect(() => {
+        if (orders) {
+            const pendingCount = orders.filter(order => order.status === 'Pending').length;
+            setPendingOrdersCount(pendingCount);
+        }
+    }, [orders]);
+
+    // Fetch most ordered products
+    useEffect(() => {
+        const fetchMostOrdered = async () => {
+            try {
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+                const response = await axios.get(`${backendUrl}/api/products/most-ordered`);
+                setMostOrderedProductsData(response.data);
+                console.log("Most ordered products fetched:", response.data);
+            } catch (error) {
+                console.error("Error fetching most ordered products:", error);
+            }
+        };
+        fetchMostOrdered();
+    }, []);
+
+    // Fetch all orders and calculate total revenue
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            setFetchError(null);
+            try {
+                const res = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                if (res.data?.success) {
+                    setOrders(res.data.orders);
+
+                    const calculatedTotalRevenue = res.data.orders.reduce((sum, order) => {
+                        return sum + (order.totalPoints || 0);
+                    }, 0);
+                    setTotalRevenue(calculatedTotalRevenue);
+                } else {
+                    const errorMessage = res.data?.message || res.data?.error || 'Failed to fetch orders.';
+                    setFetchError(errorMessage);
+                }
+            } catch (err) {
+                const message =
+                    err.response?.data?.message ||
+                    (err.response ? `Status: ${err.response.status}` :
+                        err.request ? 'No server response.' :
+                            err.message || 'Request error.');
+                setFetchError(message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrders();
+    }, [backendUrl]);
+
+    useEffect(() => {
+        const fetchWeeklyRevenueForChart = async () => {
+            setLoadingWeeklyRevenueChart(true);
+            setErrorWeeklyRevenueChart(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Weekly Revenue Chart:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+
+                    const weeklyRevenueByDay = Array(7).fill(0);
+
+                    response.data.orders.forEach(order => {
+                        const createdAt = new Date(order.createdAt);
+                        if (createdAt >= startOfWeek && createdAt <= endOfWeek) {
+                            const dayIndex = createdAt.getDay();
+                            weeklyRevenueByDay[dayIndex] += order.totalPoints || 0;
+                        }
+                    });
+
+                    // Format data for rendering the chart
+                    const formattedData = weeklyRevenueByDay.map((revenue, index) => ({
+                        day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index],
+                        revenue
+                    }));
+
+                    setWeeklyRevenueData(formattedData);
+                } else {
+                    setErrorWeeklyRevenueChart(response.data?.message || 'Failed to fetch orders for weekly revenue chart.');
+                }
+            } catch (error) {
+                console.error('Error fetching orders for weekly revenue chart:', error);
+                setErrorWeeklyRevenueChart(error?.message || 'An error occurred while fetching orders for weekly revenue chart.');
+            } finally {
+                setLoadingWeeklyRevenueChart(false);
+            }
+        };
+
+        fetchWeeklyRevenueForChart();
+    }, [backendUrl]);
+
+    // Fetched recentOrders data from orders
+    const recentOrders = orders ? orders.slice(0, 3) : [];
 
     // Placeholder chart data
-    const weeklyRevenueData = [500, 800, 600, 900, 1200, 1000, 1500];
-    const mostOrderedProductsData = [
-        { product: 'Product A', orders: 32.9, color: '#0088FE' },
-        { product: 'Product B', orders: 6.6, color: '#00C49F' },
-        { product: 'Product C', orders: 9.2, color: '#FFBB28' },
-        { product: 'Product D', orders: 11.8, color: '#FF8042' },
-        { product: 'Product E', orders: 15.8, color: '#AF19FF' },
-        { product: 'Product F', orders: 23.7, color: '#8884d8' },
-        // ... and so on for all your top ordered products
-    ];
     const volunteerPurchaseActivity = [10, 20, 15, 25, 30, 28, 35];
 
-    // Function to render a simple bar chart (placeholder)
     const renderBarChart = (data, title) => {
-        if (!chartRef.current) return null;
-        const maxDataValue = Math.max(...data);
-        const chartHeight = 150;
-        const barWidth = 30;
-        const barSpacing = 10;
-        const availableWidth = chartRef.current.offsetWidth;
-        const totalBarWidth = (barWidth + barSpacing) * data.length - barSpacing;
-        const startX = (availableWidth - totalBarWidth) / 2;
+    if (loadingWeeklyRevenueChart) {
+        return <div className="text-center text-gray-500">Loading weekly revenue data...</div>;
+    }
 
-        return (
-            <div className="h-45 w-full relative " ref={chartRef}>
-                {data.map((value, index) => {
-                    const barHeight = (value / maxDataValue) * chartHeight;
-                    const x = startX + index * (barWidth + barSpacing);
-
-                    return (
-                        <motion.div
-                            key={index}
-                            className="bg-[#A2574F] rounded-md"
-                            style={{
-                                width: barWidth,
-                                height: barHeight,
-                                marginLeft: index > 0 ? barSpacing : 0,
-                                position: 'absolute',
-                                bottom: 0,
-                                left: x,
-                            }}
-                            initial={{ opacity: 0, scaleY: 0 }}
-                            animate={{ opacity: 1, scaleY: 1 }}
-                            transition={{
-                                duration: 0.3,
-                                delay: index * 0.1,
-                                type: 'spring',
-                                stiffness: 100,
-                            }}
-                        >
-                            <span className={`absolute text-xs bottom-full mb-1 left-1/2 -translate-x-1/2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                                {value}
-                            </span>
-                        </motion.div>
-                    );
-                })}
-                <div className={`absolute bottom-0 left-0 w-full h-px ${isDarkMode ? 'bg-gray-700' : 'bg-white/20'}`}></div>
-            </div>
-        );
-    };
-
-    // Function to render a simple donut chart (placeholder)
-    const renderDonutChart = (data, title) => {
-        if (!chartRef.current) return null;
-        const total = data.reduce((acc, item) => acc + item.orders, 0);
-        const chartRadius = 90;
-        const holeRadius = 35;
-        const labelRadius = 100;
-
-        return (
-            <div className="relative w-full h-full top-2 pr-30 flex items-end justify-center" ref={chartRef}>
-                <svg width={chartRadius * 2} height={chartRadius * 2}>
-                    {data.map((item, index) => {
-                        const startAngle = (index === 0 ? 0 : data.slice(0, index).reduce((acc, curr) => acc + curr.orders, 0) / total) * 360;
-                        const angle = (item.orders / total) * 360;
-                        const endAngle = startAngle + angle;
-                        const midAngle = (startAngle + endAngle) / 2;
-                        const outerRadius = chartRadius;
-                        const innerRadius = holeRadius;
-                        const percentage = ((item.orders / total) * 100).toFixed(1);
-                        const labelX = (outerRadius + labelRadius * Math.cos((midAngle - 90) * Math.PI / 180));
-                        const labelY = (outerRadius + labelRadius * Math.sin((midAngle - 90) * Math.PI / 180));
-                        const textAnchor = midAngle > 90 && midAngle < 270 ? 'end' : 'start';
-                        const xOffset = textAnchor === 'end' ? -5 : 5;
-                        const labelRadiusPercentage = chartRadius * 0.65; // Adjust for percentage label position
-                        const percentageX = (outerRadius + labelRadiusPercentage * Math.cos((midAngle - 90) * Math.PI / 180));
-                        const percentageY = (outerRadius + labelRadiusPercentage * Math.sin((midAngle - 90) * Math.PI / 180));
-
-                        const startPointX = outerRadius * Math.cos((startAngle - 90) * Math.PI / 180);
-                        const startPointY = outerRadius * Math.sin((startAngle - 90) * Math.PI / 180);
-                        const endPointX = outerRadius * Math.cos((endAngle - 90) * Math.PI / 180);
-                        const endPointY = outerRadius * Math.sin((endAngle - 90) * Math.PI / 180);
-
-                        const largeArcFlag = angle > 180 ? 1 : 0;
-
-                        const pathData = `M ${outerRadius} ${outerRadius}
-                                          L ${outerRadius + startPointX} ${outerRadius + startPointY}
-                                          A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerRadius + endPointX} ${outerRadius + endPointY}
-                                          L ${outerRadius + innerRadius * Math.cos((endAngle - 90) * Math.PI / 180)} ${outerRadius + innerRadius * Math.sin((endAngle - 90) * Math.PI / 180)}
-                                          A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${outerRadius + innerRadius * Math.cos((startAngle - 90) * Math.PI / 180)} ${outerRadius + innerRadius * Math.sin((startAngle - 90) * Math.PI / 180)}
-                                          Z`;
+    if (errorWeeklyRevenueChart) {
+        return <div className="text-center text-red-500">Error loading weekly revenue data.</div>;
+    }
+    if (!data || data.length === 0) {
+        return <div className="text-center text-gray-400">No weekly revenue data available.</div>;
+    }
+    const chartHeight = 200;
+    const barWidth = 30; 
+    const barGap = 20;
+    const maxRevenue = Math.max(...data.map(point => point.revenue), 100);
+    return (
+        <div className="h-[250px] w-full relative" ref={chartRef}>
+            <svg className="absolute inset-0 w-full h-full">
+                <g transform="translate(2, 40)"> 
+                    {data.map((point, index) => {
+                        const barHeight = (point.revenue / maxRevenue) * 120;
+                        const x = index * (barWidth + barGap);
+                        const y = chartHeight - barHeight - 40;
 
                         return (
                             <g key={index}>
-                                <motion.path
+                                <text
+                                    x={x + barWidth / 2}
+                                    y={y - 10}
+                                    fontSize="12"
+                                    fontWeight = "bold"
+                                    fill={isDarkMode ? "white" : "black"}
+                                    textAnchor="middle"
+                                >
+                                    {point.revenue.toFixed(2)}
+                                </text>
+                                <rect
+                                    x={x}
+                                    y={y}
+                                    width={barWidth}
+                                    height={barHeight}
+                                    fill="#A2574F"
+                                    rx="6"
+                                />
+                                <text
+                                    x={x + barWidth / 2}
+                                    y={y + barHeight / 2 + 5}
+                                    fontSize="10"
+                                    fill="white"
+                                    textAnchor="middle"
+                                >
+                                    {point.day}
+                                </text>
+                            </g>
+                        );
+                    })}
+                </g>
+            </svg>
+        </div>
+    );
+};
+
+
+    // Function to render DONUT chart
+    const fixedColors = ['#FFD700', '#9B59B6', '#FF69B4', '#1E90FF', '#2ECC71'];
+    const renderDonutChart = (data, title) => {
+        if (!data || data.length === 0)
+            return <div className="text-gray-400 text-center">No data to display</div>;
+
+        const top5Data = data.slice(0, 5).map(item => ({
+            ...item,
+            orders: Number(item.orders) || 0,
+        }));
+
+        const total = top5Data.reduce((acc, item) => acc + item.orders, 0);
+        if (total === 0)
+            return <div className="text-gray-400 text-center">No orders to display</div>;
+        const chartRadius = 90;
+        const holeRadius = 35;
+        const svgWidth = chartRadius * 2;
+        const svgHeight = chartRadius * 2;
+        return (
+            <div className="relative w-full h-full top-2 pr-30 flex items-end justify-center">
+                <svg width={svgWidth} height={svgHeight}>
+                    {top5Data.map((item, index) => {
+                        const startAngle = (index === 0
+                            ? 0
+                            : top5Data.slice(0, index).reduce((acc, curr) => acc + curr.orders, 0) / total) * 360;
+                        const angle = (item.orders / total) * 360;
+                        const endAngle = startAngle + angle;
+                        const midAngle = (startAngle + endAngle) / 2;
+                        const percentage = ((item.orders / total) * 100).toFixed(1);
+                        const startX = chartRadius + chartRadius * Math.cos((startAngle - 90) * Math.PI / 180);
+                        const startY = chartRadius + chartRadius * Math.sin((startAngle - 90) * Math.PI / 180);
+                        const endX = chartRadius + chartRadius * Math.cos((endAngle - 90) * Math.PI / 180);
+                        const endY = chartRadius + chartRadius * Math.sin((endAngle - 90) * Math.PI / 180);
+                        const largeArcFlag = angle > 180 ? 1 : 0;
+                        const pathData = `
+                      M ${chartRadius} ${chartRadius}
+                      L ${startX} ${startY}
+                      A ${chartRadius} ${chartRadius} 0 ${largeArcFlag} 1 ${endX} ${endY}
+                      L ${chartRadius + holeRadius * Math.cos((endAngle - 90) * Math.PI / 180)} ${chartRadius + holeRadius * Math.sin((endAngle - 90) * Math.PI / 180)}
+                      A ${holeRadius} ${holeRadius} 0 ${largeArcFlag} 0 ${chartRadius + holeRadius * Math.cos((startAngle - 90) * Math.PI / 180)} ${chartRadius + holeRadius * Math.sin((startAngle - 90) * Math.PI / 180)}
+                      Z`;
+                        const percentageX = chartRadius + (chartRadius * 0.65) * Math.cos((midAngle - 90) * Math.PI / 180);
+                        const percentageY = chartRadius + (chartRadius * 0.65) * Math.sin((midAngle - 90) * Math.PI / 180);
+                        const color = fixedColors[index % fixedColors.length];
+                        return (
+                            <g key={index}>
+                                <path
                                     d={pathData}
-                                    fill={item.color}
+                                    fill={color}
                                     stroke="#f3f4f6"
                                     strokeWidth="1"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 }}
                                 />
-                                <motion.text
-                                    x={percentageX}
-                                    y={percentageY}
-                                    textAnchor="middle"
-                                    fontSize="10"
-                                    fill="black"
-                                    style={{ pointerEvents: 'none' }}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                >
-                                    {percentage}%
-                                </motion.text>
+                                {percentage > 0 && (
+                                    <text
+                                        x={percentageX}
+                                        y={percentageY}
+                                        textAnchor="middle"
+                                        fontSize="10"
+                                        fontWeight="bold"
+                                        fill="black"
+                                        style={{ pointerEvents: 'none' }}
+                                    >
+                                        {percentage}%
+                                    </text>
+                                )}
                             </g>
                         );
                     })}
                     <circle cx={chartRadius} cy={chartRadius} r={holeRadius} fill="white" />
                 </svg>
-                <div className="absolute top-0 right-15 text-sm">
-                    {data.map((item, index) => (
+
+                {/* Legend */}
+                <div className={`absolute top-0 right-7 text-[10px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                    {top5Data.map((item, index) => (
                         <div key={index} className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                            <span>{String.fromCharCode(65 + index)}</span> {/* A, B, C, ... */}
+                            <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: fixedColors[index % fixedColors.length] }}
+                            ></div>
+                            <span>{item.name ? item.name.substring(0, 10) : `Product ${index + 1}`}</span>
                         </div>
                     ))}
-                </div>
-            </div>
-        );
+                </div></div>);
     };
 
     // Function to render a simple line chart
@@ -332,7 +476,6 @@ const AdminDashboard = () => {
         for (let i = 1; i < dataPoints; i++) {
             path += ` L ${points[i].x} ${points[i].y}`;
         }
-
         return (
             <div className="h-30 top-7 w-full relative " ref={chartRef}>
                 <svg className="absolute inset-0 w-full h-full">
@@ -440,6 +583,60 @@ const AdminDashboard = () => {
         fetchLowStockProducts();
     }, []);
 
+    // Fetch total investment (total purchase cost)
+    useEffect(() => {
+        const fetchTotalInvestment = async () => {
+            try {
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+                const response = await fetch(`${backendUrl}/api/products/total-purchase-value/details`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch total investment: ${response.status} - ${errorText}`);
+                }
+                const data = await response.json();
+                setTotalInvestment(data.totalPurchaseValue);
+            } catch (error) {
+                console.error("Error fetching total investment:", error);
+                setTotalInvestment('Error');
+            }
+        };
+        fetchTotalInvestment();
+    }, []);
+    useEffect(() => {
+        const fetchMonthlyRevenue = async () => {
+            setLoadingMonthlyRevenue(true);
+            setErrorMonthlyRevenue(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Monthly Revenue:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const currentYear = now.getFullYear();
+                    const currentMonth = now.getMonth();
+
+                    const monthlyOrders = response.data.orders.filter(order => {
+                        const createdAt = new Date(order.createdAt);
+                        return createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth;
+                    });
+                    const calculatedMonthlyRevenue = monthlyOrders.reduce((sum, order) => sum + (order.totalPoints || 0), 0);
+                    setMonthlyRevenue(calculatedMonthlyRevenue);
+                } else {
+                    setErrorMonthlyRevenue(response.data?.message || 'Failed to fetch orders for monthly revenue calculation.');
+                }
+            } catch (error) {
+                console.error('Error fetching orders for monthly revenue:', error);
+                setErrorMonthlyRevenue(error?.message || 'An error occurred while fetching orders for monthly revenue.');
+            } finally {
+                setLoadingMonthlyRevenue(false);
+            }
+        };
+        fetchMonthlyRevenue();
+    }, []);
     return (
         <div className={`flex min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-[#F5F5F5]'}`}>
             <AdminNavbar
@@ -509,27 +706,25 @@ const AdminDashboard = () => {
                             <StyledLink to="/adminorders">
                                 <OverviewCard
                                     title="Pending Orders"
-                                    value={23}
+                                    value={loading ? 'Loading...' : pendingOrdersCount}
                                     icon={() => <ShoppingCart className={isDarkMode ? 'text-yellow-200 w-11 h-11' : 'text-yellow-400 w-11 h-11'} />}
                                     onClick={() => setActiveTab('Orders')}
                                 />
                             </StyledLink>
                             <OverviewCard
                                 title="Monthly Revenue"
-                                value={5430}
+                                value={loadingMonthlyRevenue ? 'Loading...' : errorMonthlyRevenue ? 'Error' : monthlyRevenue !== null ? `$${monthlyRevenue.toFixed(2)}` : '$0.00'}
                                 icon={() => <CreditCard className={isDarkMode ? 'text-green-500 w-11 h-11' : 'text-green-600 w-11 h-11'} />}
                                 onClick={() => setActiveTab('Revenue')}
                             />
-                           
                         </div>
-
                         {/* Middle Section: Analytics Panel */}
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-10 mb-10">
                             <AnalyticsCard title="Weekly Revenue" chartRef={chartRef}>
-                                {renderBarChart(weeklyRevenueData, 'Weekly Revenue')}
+                               {renderBarChart(weeklyRevenueData, 'Weekly Revenue')}
                             </AnalyticsCard>
                             <AnalyticsCard title="Most Ordered Products" chartRef={chartRef}>
-                                {renderDonutChart(mostOrderedProductsData, 'Most Ordered Products', isDarkMode)}
+                                {renderDonutChart(mostOrderedProductsData, 'Most Ordered Products')}
                             </AnalyticsCard>
                             <AnalyticsCard title="Volunteer Purchase Activity" chartRef={chartRef}>
                                 {renderLineChart(volunteerPurchaseActivity, 'Volunteer Purchase Activity')}
@@ -537,43 +732,63 @@ const AdminDashboard = () => {
                         </div>
                         {/* Bottom Section: Quick Tables */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <Card title="Recent Orders">
-                                <ul className="space-y-3">
+                            <Card title={<span><span className="text-3xl mr-1">🛒</span> Recent Orders </span>} className="bg-[#e4c2a6]">
+                                <ul className="space-y-3.5 mt-2">
                                     {recentOrders.map(order => (
-                                        <li key={order.id} className={isDarkMode ? 'text-gray-300 text-sm' : 'text-[#664C36] text-sm'}>
-                                            <span className="font-medium">Order #{order.id}</span> -{' '}
-                                            {order.volunteer} -{' '}
+                                        <li key={order._id} className={isDarkMode ? 'text-gray-300 text-sm' : 'text-[#664C36] text-sm'}>
+                                            <span className="font-medium">Order #{order._id}</span> -{' '}
                                             <span
                                                 className={
                                                     order.status === 'Pending'
                                                         ? 'text-yellow-500'
                                                         : order.status === 'Shipped'
                                                             ? 'text-blue-500'
-                                                            : 'text-green-500'
-                                                }
-                                            >
+                                                            : 'text-green-500'}>
                                                 {order.status}
-                                            </span>{' '}
-                                            ({order.date})
-                                        </li>
-                                    ))}
+                                            </span>
+                                        </li>))}
                                 </ul>
                                 <StyledLink to="/adminorders" className="mt-4 inline-flex items-center text-sm">
                                     View All Orders <ArrowRight className="w-4 h-4 ml-1" />
                                 </StyledLink>
                             </Card>
-                            <Card title="Low Stock Alerts" className="bg-[#e4c2a6]">
+                            <Card title={<span><span className="text-2xl mr-1">🔴</span> Low Stock Alert </span>} className="bg-[#e4c2a6]">
                                 <ul className="space-y-3.5 mt-2">
                                     {lowStockProducts.map((alert, index) => (
                                         <li key={index} className={isDarkMode ? 'text-gray-300 text-sm flex items-center' : 'text-[#664C36] text-sm flex items-center'}>
                                             <AlertTriangle className="w-6 h-6 mr-2 text-red-500 inline-block" />
                                             <span className="font-medium">{alert.name}</span> -{' '}
                                             {alert.stockQuantity} pcs!
-                                        </li>
-                                    ))}
+                                        </li>))}
                                 </ul>
                                 <StyledLink to="/adminproducts" className="mt-4 inline-flex items-center text-sm">
                                     Manage Stock <ArrowRight className="w-4 h-4 ml-1" />
+                                </StyledLink>
+                            </Card>
+                            <Card title={<span><span className="text-3xl mr-1">💰</span> Financial Overview</span>} className="bg-[#e4c2a6]">
+                                <ul className="space-y-3.5 mt-2">
+                                    <li className="flex items-center space-x-2">
+                                        <DollarSign className="w-6 h-6 text-[#FF8042]" />
+                                        <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
+                                            <span className="font-semibold">Total Investment</span> — {totalInvestment}$
+                                        </span>
+                                    </li>
+
+                                    <li className="flex items-center space-x-2">
+                                        <TrendingUp className="w-6 h-6 text-[#00C49F]" />
+                                        <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
+                                            <span className="font-semibold">Total Revenue</span> — {totalRevenue}$
+                                        </span>
+                                    </li>
+                                    <li className="flex items-center space-x-2">
+                                        <PiggyBank className="w-6 h-6 text-[#AF19FF]" />
+                                        <span className={isDarkMode ? 'text-gray-300' : 'text-[#664C36] text-sm flex items-center'}>
+                                            <span className="font-semibold">Net Profit</span> — Calculating...
+                                        </span>
+                                    </li>
+                                </ul>
+                                <StyledLink to="/adminrevenue" className="mt-4 inline-flex items-center text-sm font-medium text-[#664C36] hover:underline">
+                                    View Detailed Revenue <ArrowRight className="w-4 h-4 ml-1" />
                                 </StyledLink>
                             </Card>
                         </div>

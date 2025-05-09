@@ -90,7 +90,7 @@ export const AppContextProvider = (props) => {
         }
 
         try {
-          const res = await axios.get(`${backendUrl}/api/users/cart`, {
+          const res = await axios.get(`${backendUrl}/api/user/cart`, {
             withCredentials: true,
           });
           setCart(res.data || []);
@@ -106,10 +106,13 @@ export const AppContextProvider = (props) => {
   const restoreCartFromLocal = async () => {
     try {
       const localCart = JSON.parse(localStorage.getItem("cart")) || [];
-      const res = await axios.get(`${backendUrl}/api/users/cart`, { withCredentials: true });
-      const dbCart = res.data || [];
+      const res = await axios.get(`${backendUrl}/api/user/cart`, {
+        withCredentials: true,
+      });
 
+      const dbCart = res.data || [];
       const mergedCart = [...dbCart];
+
       localCart.forEach(localItem => {
         const found = mergedCart.find(i => i.id === localItem.id);
         if (found) {
@@ -120,7 +123,7 @@ export const AppContextProvider = (props) => {
       });
 
       setCart(mergedCart);
-      await axios.post(`${backendUrl}/api/users/cart`, { items: mergedCart }, { withCredentials: true });
+      await axios.post(`${backendUrl}/api/user/cart`, { items: mergedCart }, { withCredentials: true });
       localStorage.removeItem("cart");
       setShowCartRestorePrompt(false);
     } catch (err) {

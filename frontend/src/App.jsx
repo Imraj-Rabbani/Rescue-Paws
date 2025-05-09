@@ -2,10 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-
 import HomePage from './pages/HomePage';
-
 import Login from './pages/Login';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -47,7 +44,7 @@ const App = () => {
         <Route path="/adminproducts" element={<ProductPage />} />
         <Route path="/adminvolunteers" element={<VolunteerPage />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
-        <Route path="/revenue" element={<RevenuePage />} />
+        <Route path="/adminrevenue" element={<RevenuePage />} />
         <Route path="/volunteers/:id" element={<VolunteerProfile />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/adminrevenue" element={<RevenuePage />} />
