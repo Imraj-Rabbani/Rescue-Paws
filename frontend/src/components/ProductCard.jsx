@@ -13,7 +13,7 @@ const ProductCard = ({ product }) => {
     const fetchStock = async () => {
       try {
         const response = await axios.get(`${backendUrl}/api/products/${product.id}`);
-        setStockQuantity(response.data.product?.stockQuantity || 0); // ✅ FIXED
+        setStockQuantity(response.data.stockQuantity);
       } catch (error) {
         console.error("Error fetching stock data:", error);
       }
