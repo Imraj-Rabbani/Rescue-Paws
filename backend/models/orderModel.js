@@ -11,7 +11,8 @@ const orderSchema = new mongoose.Schema({
       name: String,
       imageUrl: String,
       sellingPrice: Number,
-      quantity: Number
+      quantity: Number,
+      purchaseCostAtOrderTime: Number  // <-- Add this field
     }
   ],
   donation: {
