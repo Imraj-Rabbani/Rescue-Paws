@@ -68,6 +68,50 @@ router.get('/total-purchase-value/details', async (req, res) => {
     }
 });
 
+// GET monthly purchase cost
+router.get('/monthly-purchase-cost', async (req, res) => {
+    const { year, month } = req.query;
+    if (!year || !month) return res.status(400).json({ message: 'Please provide year and month.' });
+
+    const y = parseInt(year);
+    const m = parseInt(month) - 1;
+    const start = new Date(y, m, 1);
+    const end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+
+    try {
+        const products = await Product.find({ productAddDate: { $gte: start, $lte: end } }, 'purchaseCost stockQuantity');
+        const monthlyPurchaseCost = products.reduce((sum, p) => sum + ((p.purchaseCost || 0) * (p.stockQuantity || 0)), 0);
+        res.json({ year: y, month: m + 1, monthlyPurchaseCost })
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch monthly purchase cost' });
+    }
+});
+
+// GET detailed monthly purchase cost
+router.get('/monthly-purchase-cost/details', async (req, res) => {
+    const { year, month } = req.query;
+    if (!year || !month) return res.status(400).json({ message: 'Please provide year and month.' });
+    const y = parseInt(year);
+    const m = parseInt(month) - 1;
+    const start = new Date(y, m, 1);
+    const end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+
+    try {
+        const products = await Product.find({ productAddDate: { $gte: start, $lte: end } }, 'name purchaseCost stockQuantity productAddDate');
+        const total = products.reduce((sum, p) => sum + ((p.purchaseCost || 0) * (p.stockQuantity || 0)), 0);
+        const productDetails = products.map(p => ({
+            name: p.name,
+            purchaseCost: p.purchaseCost || 0,
+            stockQuantity: p.stockQuantity || 0,
+            totalValue: (p.purchaseCost || 0) * (p.stockQuantity || 0),
+            productAddDate: p.productAddDate,
+        }));
+        res.json({ year: y, month: m + 1, totalPurchaseValue: total, productDetails });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch detailed monthly purchase cost' });
+    }
+});
+
 // GET all products
 router.get('/', getAllProducts);
 
