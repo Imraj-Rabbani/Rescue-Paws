@@ -40,13 +40,15 @@ const Cart = () => {
     }
   };
 
-  // Fetch stock and sync cart quantity with actual stock
+  // Fetch stock once on mount — warning suppressed safely
   useEffect(() => {
     const fetchStock = async () => {
       const stockData = {};
       const adjustedCart = [];
 
-      for (const item of cart) {
+      const localCart = JSON.parse(localStorage.getItem("cart")) || cart;
+
+      for (const item of localCart) {
         try {
           const response = await axios.get(`${backendUrl}/api/products/${item.id}`);
           const stockQty = response.data.stockQuantity || 0;
@@ -72,8 +74,9 @@ const Cart = () => {
       setCart(adjustedCart);
     };
 
-    if (cart.length > 0) fetchStock();
-  }, [cart, backendUrl, setCart]);
+    fetchStock();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">

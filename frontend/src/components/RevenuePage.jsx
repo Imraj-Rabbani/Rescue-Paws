@@ -5,6 +5,8 @@ import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
 
 
+
+
 // Reusable Card Component
 const Card = ({ title, children, className, onClick }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -26,6 +28,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
     const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F';
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
     const headerBgColor = isDarkMode ? 'bg-gray-700' : '#D4A373';
+
 
     if (title === "Average Order Value Calculation") {
         return (
@@ -51,10 +54,12 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</span>
                         </div>
 
+
                     </div>
                 </div>
             </div>);
     }
+
 
     if (title === "Total Profit Breakdown") {
         return (
@@ -84,6 +89,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
             </div>
         );
     }
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
@@ -206,6 +212,8 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
         </div>
     );
 };
+
+
 
 
 // Monthly Revenue Details Modal
@@ -406,7 +414,7 @@ const RevenuePage = () => {
     const [loadingMonthlyRevenueDetails, setLoadingMonthlyRevenueDetails] = useState(false);
     const [totalRevenue, setTotalRevenue] = useState(null);
     const [errorMonthlyRevenueDetails, setErrorMonthlyRevenueDetails] = useState(null);
-    
+   
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
         setShowCalculation(title);
@@ -498,6 +506,7 @@ const RevenuePage = () => {
                                         const itemPurchaseCost = purchaseCost * quantity;
                                         calculatedOrderedPurchaseCost += itemPurchaseCost;
 
+
                                     }
                                 } catch (error) {
                                     console.error(`Error fetching product details for ID: ${item._id}`, error);
@@ -520,6 +529,7 @@ const RevenuePage = () => {
             }
         };
 
+
        
         const fetchMonthlyRevenueOrderDetails = async () => {
             setLoadingMonthlyRevenueDetails(true);
@@ -536,6 +546,8 @@ const RevenuePage = () => {
                     const now = new Date();
                     const currentYear = now.getFullYear();
                     const currentMonth = now.getMonth();
+
+
 
 
                     const monthlyOrdersDetails = response.data.orders.filter(order => {
@@ -669,6 +681,8 @@ const RevenuePage = () => {
             />
 
 
+
+
             <div className="flex-1 p-6">
                 <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-white' : 'text-[#64332d]'} mb-8`}><u>Revenue & Profit Overview</u></h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -708,6 +722,7 @@ const RevenuePage = () => {
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Net earnings after deducting product costs.</p>
                     </Card>
 
+
                     <Card title="Average Order Value" onClick={() => handleCardClick("Average Order Value")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
@@ -715,6 +730,7 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Average revenue generated per order.</p>
                     </Card>
+
 
                     <Card title="Weekly Revenue" onClick={() => handleCardClick("Weekly Revenue")}>
                         <div className="flex items-center justify-center">
@@ -739,6 +755,7 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total cost of products in all orders.</p>
                     </Card>
+
 
                     <Card title="Monthly Revenue" onClick={() => handleCardClick("Monthly Revenue")}>
                         <div className="flex items-center justify-center">
@@ -822,5 +839,6 @@ const RevenuePage = () => {
                         onClose={handleCloseCalculation} />
                 )} </div> </div>);
 };
+
 
 export default RevenuePage;

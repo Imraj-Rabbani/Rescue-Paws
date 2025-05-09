@@ -7,9 +7,13 @@ import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
 
 
+
+
 // Reusable Card Component with hover effects and consistent styling
 const Card = ({ title, children, className, onClick }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
+
+
 
 
     return (
@@ -27,6 +31,8 @@ const Card = ({ title, children, className, onClick }) => {
 };
 
 
+
+
 // Styled Link Component
 const StyledLink = ({ to, children, className }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -41,10 +47,14 @@ const StyledLink = ({ to, children, className }) => {
 };
 
 
+
+
 // Overview Card with icon and value animation
 const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
     const [displayValue, setDisplayValue] = useState(0);
     const { isDarkMode } = useContext(DarkmodeContext);
+
+
 
 
     // Animate the value from 0 to the actual value
@@ -60,10 +70,14 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
                 setDisplayValue(Math.ceil(value * progress));
 
 
+
+
                 if (progress >= 1) {
                     clearInterval(interval);
                 }
             }, 1000 / frameRate);
+
+
 
 
             return () => clearInterval(interval);
@@ -71,6 +85,8 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
             setDisplayValue(value);
         }
     }, [value]);
+
+
 
 
     return (
@@ -95,6 +111,8 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
 };
 
 
+
+
 // Analytics Card with a title and content area
 const AnalyticsCard = ({ title, children, chartRef }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -109,10 +127,14 @@ const AnalyticsCard = ({ title, children, chartRef }) => {
 };
 
 
+
+
 // Draggable Panel Component
 const DraggablePanel = ({ title, children }) => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const { isDarkMode } = useContext(DarkmodeContext);
+
+
 
 
     return (
@@ -142,6 +164,8 @@ const DraggablePanel = ({ title, children }) => {
         </motion.div>
     );
 };
+
+
 
 
 // --- Main Component ---
@@ -177,6 +201,7 @@ const AdminDashboard = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
+
     //fetch all orders
     useEffect(() => {
         const fetchOrders = async () => {
@@ -208,6 +233,7 @@ const AdminDashboard = () => {
         fetchOrders();
     }, [backendUrl]);
 
+
     //calculate pending order count
     useEffect(() => {
         if (orders) {
@@ -215,6 +241,8 @@ const AdminDashboard = () => {
             setPendingOrdersCount(pendingCount);
         }
     }, [orders]);
+
+
 
 
     // Fetch most ordered products
@@ -232,6 +260,7 @@ const AdminDashboard = () => {
         fetchMostOrdered();
     }, []);
 
+
     // Fetch all orders and calculate total revenue
     useEffect(() => {
         const fetchOrders = async () => {
@@ -246,6 +275,8 @@ const AdminDashboard = () => {
                 });
                 if (res.data?.success) {
                     setOrders(res.data.orders);
+
+
 
 
                     const calculatedTotalRevenue = res.data.orders.reduce((sum, order) => {
@@ -269,6 +300,7 @@ const AdminDashboard = () => {
         };
         fetchOrders();
     }, [backendUrl]);
+
 
     useEffect(() => {
         const fetchWeeklyRevenueForChart = async () => {
@@ -317,6 +349,7 @@ const AdminDashboard = () => {
         fetchWeeklyRevenueForChart();
     }, [backendUrl]);
 
+
     // Calculate Average Order Value
     useEffect(() => {
         if (orders && orders.length > 0) {
@@ -339,6 +372,7 @@ const AdminDashboard = () => {
             setErrorAverageOrderValue(null);
         }
     }, [orders]);
+
 
     // Fetched recentOrders data from orders
     const recentOrders = orders ? orders.slice(0, 3) : [];
@@ -410,6 +444,8 @@ const AdminDashboard = () => {
             return <div className="text-gray-400 text-center">No data to display</div>;
 
 
+
+
         const top5Data = data.slice(0, 5).map(item => ({
             ...item,
             orders: Number(item.orders) || 0,
@@ -475,6 +511,8 @@ const AdminDashboard = () => {
                 </svg>
 
 
+
+
                 {/* Legend */}
                 <div className={`absolute top-0 right-7 text-[10px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
                     {top5Data.map((item, index) => (
@@ -490,10 +528,14 @@ const AdminDashboard = () => {
     };
 
 
+
+
     // Function to render a simple line chart
     const renderLineChart = (data, title) => {
         const availableWidth = chartRef?.current?.offsetWidth || 200;
         if (!chartRef.current) return null;
+
+
 
 
         const maxDataValue = Math.max(...data);
@@ -505,6 +547,8 @@ const AdminDashboard = () => {
             const y = chartHeight - (value / maxDataValue) * chartHeight;
             return { x, y, value };
         });
+
+
 
 
         // Generate SVG path string
@@ -576,6 +620,8 @@ const AdminDashboard = () => {
     };
 
 
+
+
     // Fetch product count from the database
     useEffect(() => {
         const fetchProductCount = async () => {
@@ -600,6 +646,8 @@ const AdminDashboard = () => {
         };
         fetchProductCount();
     }, []);
+
+
 
 
     // Fetch low stock products
@@ -723,7 +771,7 @@ const AdminDashboard = () => {
                         <DraggablePanel title="Dashboard Notes">
                             <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-[#664C36]'}`}>
                                 <AlertTriangle className="inline-block w-4 h-4 mr-1 text-yellow-400" />
-                                <span className="font-medium">Important:</span> Welcome to our Stray Paw's admin dashboard. 
+                                <span className="font-medium">Important:</span> Welcome to our Stray Paw's admin dashboard.
                             </p>
                             <ul className={`list-disc list-inside mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-[#664C36]'}`}>
                                 <li>Click on the overview cards to view details.</li>
@@ -740,6 +788,8 @@ const AdminDashboard = () => {
                         </DraggablePanel>
                     )}
                 </AnimatePresence>
+
+
 
 
                 {activeTab === 'Dashboard' && (
@@ -899,7 +949,3 @@ const AdminDashboard = () => {
     );
 };
 export default AdminDashboard;
-
-
-
-
