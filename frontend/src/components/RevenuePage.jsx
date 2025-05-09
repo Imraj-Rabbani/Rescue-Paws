@@ -264,7 +264,7 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
     const fontWeight = 'font-semibold';
     const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
     const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+     const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]'; 
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
     const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
@@ -306,35 +306,28 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className={`${headerBgColor}`}>
+                            <tr className={`${headerBgColor}`}> 
                                 <th className={`py-2 px-3 pl-17 text-sm ${fontWeight} ${headerTextColor}`}>Order ID</th>
                                 <th className={`py-2 px-1.5 text-sm ${fontWeight} ${headerTextColor}`}>Order Date</th>
-                                <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Order Day</th> {/* Added Day Column */}
                                 <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Selling Price</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {orderDetails.map((order, index) => {
-                                const createdAt = new Date(order.createdAt);
-                                const date = createdAt.toLocaleDateString();
-                                const day = createdAt.toLocaleDateString('en-US', { weekday: 'long' }); 
-                                return (
-                                    <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
-                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
-                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{date}</td>
-                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{day}</td> {/* Display Day */}
-                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
-                                            ${order.totalPoints ? order.totalPoints.toFixed(2) : '0.00'}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                            {orderDetails.map((order, index) => (
+                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}> 
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
+                                        ${order.totalPoints ? order.totalPoints.toFixed(2) : '0.00'} 
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan="3" className={`py-2 px-3 text-lg ${fontWeight} ${headerTextColor} text-right`}>Total:</td> {/* Adjusted colSpan */}
+                                <td colSpan="2" className={`py-2 px-3 text-lg ${fontWeight} ${headerTextColor} text-right`}>Total:</td>
                                 <td className={`py-2 px-3 text-lg ${fontWeight} ${valueTextColor}`}>
-                                    ${orderDetails.reduce((sum, order) => sum + (order.totalPoints || 0), 0).toFixed(2)}
+                                    ${orderDetails.reduce((sum, order) => sum + (order.totalPoints || 0), 0).toFixed(2)} {/* Added dollar sign */}
                                 </td>
                             </tr>
                         </tfoot>
@@ -573,11 +566,12 @@ const RevenuePage = () => {
                 if (response.data?.success && response.data.orders) {
                     const now = new Date();
                     const startOfWeek = new Date(now);
-                    startOfWeek.setDate(now.getDate() - now.getDay()); 
+                    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday is 0
                     startOfWeek.setHours(0, 0, 0, 0);
                     const endOfWeek = new Date(startOfWeek);
                     endOfWeek.setDate(startOfWeek.getDate() + 6);
                     endOfWeek.setHours(23, 59, 59, 999);
+
                     const weeklyOrders = response.data.orders.filter(order => {
                         const createdAt = new Date(order.createdAt);
                         return createdAt >= startOfWeek && createdAt <= endOfWeek;
@@ -596,40 +590,40 @@ const RevenuePage = () => {
             }
         };
 
-       const fetchWeeklyRevenueOrderDetails = async () => {
-    setLoadingWeeklyRevenueDetails(true);
-    setErrorWeeklyRevenueDetails(null);
-    try {
-        const response = await axios.get(`${backendUrl}/api/orders/all`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            },
-            withCredentials: true,
-        });
-        console.log("All Orders Response for Weekly Revenue Details:", response.data);
-        if (response.data?.success && response.data.orders) {
-            const now = new Date();
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            startOfWeek.setHours(0, 0, 0, 0);
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
-            const weeklyOrdersDetails = response.data.orders.filter(order => {
-                const createdAt = new Date(order.createdAt);
-                return createdAt >= startOfWeek && createdAt <= endOfWeek;
-            });
-            setWeeklyRevenueOrderDetails(weeklyOrdersDetails);
-        } else {
-            setErrorWeeklyRevenueDetails(response.data?.message || 'Failed to fetch weekly order details.');
-        }
-    } catch (error) {
-        console.error('Error fetching weekly order details:', error);
-        setErrorWeeklyRevenueDetails(error?.message || 'An error occurred while fetching weekly order details.');
-    } finally {
-        setLoadingWeeklyRevenueDetails(false);
-    }
-};
+        const fetchWeeklyRevenueOrderDetails = async () => {
+            setLoadingWeeklyRevenueDetails(true);
+            setErrorWeeklyRevenueDetails(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Weekly Revenue Details:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    const weeklyOrdersDetails = response.data.orders.filter(order => {
+                        const createdAt = new Date(order.createdAt);
+                        return createdAt >= startOfWeek && createdAt <= endOfWeek;
+                    });
+                    setWeeklyRevenueOrderDetails(weeklyOrdersDetails);
+                } else {
+                    setErrorWeeklyRevenueDetails(response.data?.message || 'Failed to fetch weekly order details.');
+                }
+            } catch (error) {
+                console.error('Error fetching weekly order details:', error);
+                setErrorWeeklyRevenueDetails(error?.message || 'An error occurred while fetching weekly order details.');
+            } finally {
+                setLoadingWeeklyRevenueDetails(false);
+            }
+        };
         fetchTotalPurchaseValueDetails();
         fetchAllOrdersForRevenue();
         fetchTotalRevenueOrderDetails()
