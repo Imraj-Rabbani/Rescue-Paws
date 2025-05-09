@@ -1,6 +1,7 @@
 
 import Order from '../models/Order.js';
 import User from '../models/userModel.js';
+import Product from '../models/ProductModel.js'; 
 
 // Place an order
 export const placeOrder = async (req, res) => {
@@ -15,10 +16,22 @@ export const placeOrder = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    const totalPoints = items.reduce(
-      (acc, item) => acc + item.sellingPrice * (item.quantity || 1),
-      0
-    ) + (donation || 0);
+    let totalPoints = donation || 0;
+
+    // Validate and calculate total points
+    for (const item of items) {
+      const product = await Product.findOne({ id: item.id });
+
+      if (!product) {
+        return res.status(400).json({ success: false, message: `Product not found: ${item.name}` });
+      }
+
+      if (product.stockQuantity < item.quantity) {
+        return res.status(400).json({ success: false, message: `Not enough stock for ${item.name}` });
+      }
+
+      totalPoints += item.sellingPrice * item.quantity;
+    }
 
     if (user.points < totalPoints) {
       return res.status(400).json({ success: false, message: "Not enough PetPoints." });
@@ -27,13 +40,7 @@ export const placeOrder = async (req, res) => {
     const newOrder = new Order({
       userId,
       items,
-      userInfo: {
-        name,
-        phone,
-        address,
-        promo,
-        shipping
-      },
+      userInfo: { name, phone, address, promo, shipping },
       donation,
       totalPoints,
       status: 'Pending'
@@ -65,16 +72,12 @@ export const placeOrder = async (req, res) => {
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
-
-    console.log("Fetched Orders: ", orders);  // Log the fetched orders to check purchaseCost
-
     res.status(200).json({ success: true, orders });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ success: false, message: "Failed to fetch orders." });
   }
 };
-
 
 // Admin: Delete order
 export const deleteOrder = async (req, res) => {
@@ -111,8 +114,7 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
 
-      res.status(200).json({ success: true, message: 'Order status updated successfully.', order: updatedOrder });
-
+    res.status(200).json({ success: true, message: 'Order status updated successfully.', order: updatedOrder });
   } catch (error) {
     console.error('Error updating order status:', error);
     res.status(500).json({ success: false, message: 'Internal server error.' });
