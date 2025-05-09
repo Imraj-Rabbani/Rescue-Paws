@@ -3,10 +3,6 @@ import { X, DollarSign, CalendarDays, CircleDollarSign } from 'lucide-react';
 import AdminNavbar from './AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
-
-
-
-
 // Reusable Card Component
 const Card = ({ title, children, className, onClick }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
@@ -29,7 +25,6 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
     const headerBgColor = isDarkMode ? 'bg-gray-700' : '#D4A373';
 
-
     if (title === "Average Order Value Calculation") {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
@@ -41,7 +36,10 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                         </button>
                     </div>
                     <div className="space-y-3">
-                       
+                        <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
+                            <span className={`${fontWeight} ${textColor}`}>Total Revenue:</span>
+                           <span className={`${valueTextColor}`}> ${ (calculation.productDetails.find(item => item.name === 'Total Revenue')?.totalValue || 0).toFixed(2)} </span>
+                        </div>
                         <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
                             <span className={`${fontWeight} ${textColor}`}>Total Orders:</span>
                             <span className={`${valueTextColor}`}> {calculation.productDetails.find(item => item.name === 'Total Orders')?.totalValue || '0'} </span>
@@ -50,13 +48,10 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>Average Order Value:</span>
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</span>
                         </div>
-
-
                     </div>
                 </div>
             </div>);
     }
-
 
     if (title === "Total Profit Breakdown") {
         return (
@@ -87,7 +82,6 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
         );
     }
 
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
             <div className={`w-[90%] md:w-[600px] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
@@ -109,7 +103,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                         </thead>
                         <tbody>
                             {calculation.productDetails && calculation.productDetails.map((product, index) => (
-                                <tr key={index} className={index % 2 === 0 ? rowBgLight : rowBgDark}> {/* Alternating row colors */}
+                                <tr key={index} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.name}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
                                         {product.productAddDate ? new Date(product.productAddDate).toLocaleDateString() : 'N/A'}
@@ -134,18 +128,19 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
         </div>
     );
 };
+
 // Revenue CalculationDisplay for Order Details
 const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, error, isDarkMode }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
     const fontWeight = 'font-semibold';
     const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
     const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]'; // Changed header text color
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F';
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
-    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
+    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F';
     if (!isOpen) {
         return null;
     }
@@ -189,7 +184,7 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
                         </thead>
                         <tbody>
                             {orderDetails.map((order, index) => (
-                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}> {/* Alternating row colors */}
+                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order.userId}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleString()}</td>
@@ -210,21 +205,18 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
     );
 };
 
-
-
-
 // Monthly Revenue Details Modal
 const MonthlyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, error, isDarkMode }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
     const fontWeight = 'font-semibold';
-    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]'; // Keep the existing light row background
-    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';   // Keep the existing dark row background
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]'; // Changed header text color
+    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
+    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F';
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
-    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
+    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F';
     if (!isOpen) return null;
     if (loading) {
         return (
@@ -343,7 +335,7 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
                             <tr className={`${headerBgColor}`}>
                                 <th className={`py-2 px-3 pl-17 text-sm ${fontWeight} ${headerTextColor}`}>Order ID</th>
                                 <th className={`py-2 px-1.5 text-sm ${fontWeight} ${headerTextColor}`}>Order Date</th>
-                                <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Order Day</th> {/* Added Day Column */}
+                                <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Order Day</th> 
                                 <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Selling Price</th>
                             </tr>
                         </thead>
@@ -411,11 +403,12 @@ const RevenuePage = () => {
     const [loadingMonthlyRevenueDetails, setLoadingMonthlyRevenueDetails] = useState(false);
     const [totalRevenue, setTotalRevenue] = useState(null);
     const [errorMonthlyRevenueDetails, setErrorMonthlyRevenueDetails] = useState(null);
-   
+
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
+
         setShowCalculation(title);
-         if (title === 'Total Revenue') {
+        if (title === 'Total Revenue') {
             setShowTotalRevenueDetails(true);
             fetchTotalRevenueOrderDetails();
         } else if (title === 'Weekly Revenue') {
@@ -428,6 +421,7 @@ const RevenuePage = () => {
         } else if (title === 'Total Profit') {
         }
     };
+
     useEffect(() => {
         const fetchTotalPurchaseValueDetails = async () => {
             setLoadingTotalPurchaseValue(true);
@@ -500,8 +494,6 @@ const RevenuePage = () => {
                                         const quantity = item.quantity || 0;
                                         const itemPurchaseCost = purchaseCost * quantity;
                                         calculatedOrderedPurchaseCost += itemPurchaseCost;
-
-
                                     }
                                 } catch (error) {
                                     console.error(`Error fetching product details for ID: ${item._id}`, error);
@@ -524,8 +516,6 @@ const RevenuePage = () => {
             }
         };
 
-
-       
         const fetchMonthlyRevenueOrderDetails = async () => {
             setLoadingMonthlyRevenueDetails(true);
             setErrorMonthlyRevenueDetails(null);
@@ -628,7 +618,6 @@ const RevenuePage = () => {
         fetchTotalPurchaseValueDetails();
         fetchAllOrdersForRevenue();
         fetchTotalRevenueOrderDetails()
-        
         fetchMonthlyRevenueOrderDetails();
         fetchWeeklyRevenue();
         fetchWeeklyRevenueOrderDetails();
@@ -670,14 +659,10 @@ const RevenuePage = () => {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
             />
-
-
-
-
             <div className="flex-1 p-6">
                 <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-white' : 'text-[#64332d]'} mb-8`}><u>Revenue & Profit Overview</u></h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    
+
                     <Card title="Total Revenue" onClick={() => handleCardClick("Total Revenue")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
@@ -700,8 +685,6 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Net earnings after deducting product costs.</p>
                     </Card>
-
-
                     <Card title="Average Order Value" onClick={() => handleCardClick("Average Order Value")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
@@ -709,8 +692,6 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Average revenue generated per order.</p>
                     </Card>
-
-
                     <Card title="Weekly Revenue" onClick={() => handleCardClick("Weekly Revenue")}>
                         <div className="flex items-center justify-center">
                             <CircleDollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
@@ -734,8 +715,6 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total cost of products in all orders.</p>
                     </Card>
-
-
                     <Card title="Monthly Revenue" onClick={() => handleCardClick("Monthly Revenue")}>
                         <div className="flex items-center justify-center">
                             <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
@@ -750,7 +729,18 @@ const RevenuePage = () => {
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Revenue for the current month (May 2025).</p>
                     </Card>
                 </div>
-                
+                {showCalculation === 'Average Order Value' && (
+                    <InvestmentCalculationDisplay
+                        title="Average Order Value Calculation"
+                        calculation={{
+                            productDetails: [
+                                { name: 'Total Revenue', totalValue: totalRevenue },
+                                { name: 'Total Orders', totalValue: totalOrdersCount },
+                                { name: 'Average Order Value', totalValue: averageOrderValue },],
+                            totalPurchaseValue: averageOrderValue,
+                        }}
+                        onClose={handleCloseCalculation} />
+                )}
                 {showTotalRevenueDetails && (
                     <TotalRevenueDetailsModal
                         isOpen={showTotalRevenueDetails}
@@ -799,8 +789,7 @@ const RevenuePage = () => {
                             totalPurchaseValue: weeklyProfit,
                         }}
                         onClose={handleCloseCalculation} />)}
-                </div> </div>);
+            </div> </div>);
 };
-
 
 export default RevenuePage;
