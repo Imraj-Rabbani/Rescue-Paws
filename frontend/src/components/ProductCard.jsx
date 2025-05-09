@@ -10,17 +10,17 @@ const ProductCard = ({ product }) => {
   const [stockQuantity, setStockQuantity] = useState(product.stockQuantity);
 
   useEffect(() => {
-    const fetchStock = async () => {
-      try {
-        const response = await axios.get(`${backendUrl}/api/products/${product.id}`);
-        setStockQuantity(response.data.stockQuantity);
-      } catch (error) {
-        console.error("Error fetching stock data:", error);
-      }
-    };
+  const fetchStock = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/products/${product.id}`);
+      setStockQuantity(response.data.product.stockQuantity); // Access stockQuantity from response.data.product
+    } catch (error) {
+      console.error("Error fetching stock data:", error);
+    }
+  };
 
-    fetchStock();
-  }, [backendUrl, product.id]);
+  fetchStock();
+}, [backendUrl, product.id]);
 
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
