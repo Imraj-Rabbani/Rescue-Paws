@@ -17,22 +17,19 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  // Always fetch live product from backend
   useEffect(() => {
-    getProductById(id).then(data => setProduct(data));
+    getProductById(id).then(data => setProduct(data.product)); // ✅ FIXED
   }, [id]);
 
-  // Filter related products from cached context
   useEffect(() => {
     if (!product) return;
-
     const related = productData
-      .filter(p => p.id !== id && p.category === product.category)
+      .filter(p => String(p.id) !== String(id) && p.category === product.category)
       .slice(0, 4);
 
     if (related.length < 4) {
       const extra = productData
-        .filter(p => p.id !== id && !related.includes(p))
+        .filter(p => String(p.id) !== String(id) && !related.includes(p))
         .slice(0, 4 - related.length);
       setRelatedProducts([...related, ...extra]);
     } else {
@@ -59,18 +56,13 @@ const ProductDetail = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       <ProductNavbar />
-
       <div className="bg-[AliceBlue] text-black text-center py-2 font-bold">
         ⚡ 20% OFF SMART PRODUCTS - USE CODE: PETTECH20 ⚡
       </div>
 
       <div className="container mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
         <div>
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-98 object-contain rounded-lg shadow"
-          />
+          <img src={product.imageUrl} alt={product.name} className="w-full h-98 object-contain rounded-lg shadow" />
           <div className="flex gap-2 mt-4">
             <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20 object-contain rounded border" />
           </div>
@@ -80,7 +72,6 @@ const ProductDetail = () => {
           <div>
             <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
             <p className="text-gray-600 mb-4">{product.description}</p>
-
             <div className="mb-4">
               <div className="flex items-center gap-2 text-purple-600 font-semibold text-xl">
                 <img src="/petpoints.png" alt="PetPoints" className="w-6 h-6" />

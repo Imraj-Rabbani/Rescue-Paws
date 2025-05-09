@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext } from "react";
 import axios from "axios";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 export const AppContext = createContext();
 
@@ -20,9 +20,7 @@ export const AppContextProvider = (props) => {
 
   const checkAuthStatus = async () => {
     try {
-      const res = await axios.get(`${backendUrl}/api/auth/status`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(`${backendUrl}/api/auth/status`);
       if (res.data.success) {
         setIsLoggedIn(true);
         setUserData(res.data.user);
@@ -31,30 +29,19 @@ export const AppContextProvider = (props) => {
         setUserData(null);
       }
     } catch (error) {
+      console.error("Auth check failed:", error);
       setIsLoggedIn(false);
       setUserData(null);
-      console.error("Auth check failed:", error);
     } finally {
       setAuthChecked(true);
     }
   };
 
   const fetchProducts = async () => {
-    if (productData.length > 0) return;
     setProductLoading(true);
     try {
-      const cached = localStorage.getItem("productDataCache");
-      const expiry = localStorage.getItem("productDataExpiry");
-      const now = Date.now();
-
-      if (cached && expiry && now < parseInt(expiry)) {
-        setProductData(JSON.parse(cached));
-      } else {
-        const res = await axios.get(`${backendUrl}/api/products`);
-        setProductData(res.data);
-        localStorage.setItem("productDataCache", JSON.stringify(res.data));
-        localStorage.setItem("productDataExpiry", (now + 10 * 60 * 1000).toString());
-      }
+      const res = await axios.get(`${backendUrl}/api/products`);
+      setProductData(res.data);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -90,10 +77,8 @@ export const AppContextProvider = (props) => {
         }
 
         try {
-          const res = await axios.get(`${backendUrl}/api/user/cart`, {
-            withCredentials: true,
-          });
-          setCart(res.data || []);
+          const res = await axios.get(`${backendUrl}/api/user/cart`);
+          setCart(res.data.cart || []);
         } catch (err) {
           console.error("Failed to load backend cart:", err);
         }
@@ -106,11 +91,9 @@ export const AppContextProvider = (props) => {
   const restoreCartFromLocal = async () => {
     try {
       const localCart = JSON.parse(localStorage.getItem("cart")) || [];
-      const res = await axios.get(`${backendUrl}/api/user/cart`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(`${backendUrl}/api/user/cart`);
+      const dbCart = res.data.cart || [];
 
-      const dbCart = res.data || [];
       const mergedCart = [...dbCart];
 
       localCart.forEach(localItem => {
@@ -123,7 +106,7 @@ export const AppContextProvider = (props) => {
       });
 
       setCart(mergedCart);
-      await axios.post(`${backendUrl}/api/user/cart`, { items: mergedCart }, { withCredentials: true });
+      await axios.post(`${backendUrl}/api/user/cart`, { items: mergedCart });
       localStorage.removeItem("cart");
       setShowCartRestorePrompt(false);
     } catch (err) {

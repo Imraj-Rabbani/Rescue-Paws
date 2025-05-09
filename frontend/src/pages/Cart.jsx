@@ -40,18 +40,15 @@ const Cart = () => {
     }
   };
 
-  // Fetch stock once on mount — warning suppressed safely
   useEffect(() => {
     const fetchStock = async () => {
       const stockData = {};
       const adjustedCart = [];
 
-      const localCart = JSON.parse(localStorage.getItem("cart")) || cart;
-
-      for (const item of localCart) {
+      for (const item of cart) {
         try {
           const response = await axios.get(`${backendUrl}/api/products/${item.id}`);
-          const stockQty = response.data.stockQuantity || 0;
+          const stockQty = response.data.product?.stockQuantity || 0;
           stockData[item.id] = stockQty;
 
           if (stockQty === 0) {
