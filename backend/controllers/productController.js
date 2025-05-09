@@ -15,11 +15,11 @@ export const getAllProducts = async (req, res) => {
 // @route   GET /api/products/:id
 export const getProductById = async (req, res) => {
     try {
-        const product = await Product.findOne({ id: req.params.id });
+        const product = await Product.findById(req.params.id); // ✅ FIXED
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        res.json(product);
+        res.json({ success: true, product }); // consistent response format
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

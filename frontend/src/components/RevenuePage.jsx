@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { X, DollarSign, CalendarDays, CircleDollarSign} from 'lucide-react';
+import { X, DollarSign, CalendarDays, CircleDollarSign } from 'lucide-react';
 import AdminNavbar from './AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
+
+
+
 
 // Reusable Card Component
 const Card = ({ title, children, className, onClick }) => {
@@ -10,27 +13,23 @@ const Card = ({ title, children, className, onClick }) => {
     return (
         <div
             className={`rounded-xl shadow-md p-6 border cursor-pointer ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-white/10'} ${className}`}
-            onClick={onClick}
-        >
+            onClick={onClick}>
             <h3 className={`text-lg font-semibold text-center ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'} mb-4`}>{title}</h3>
-            {children}
-        </div>
-    );
+            {children}</div>);
 };
 // Calculation Modal
-const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode }) => {
+const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode, totalRevenue, orderedPurchaseCost }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
     const fontWeight = 'font-semibold';
     const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
-    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
-    const totalRowBg = isDarkMode ? 'bg-gray-100 dark:bg-gray-800' : 'bg-[#e4ccb8]';
     const totalTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : 'text-[#A2574F]';
-    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]'
-    const modalContentBg = isDarkMode ? 'bg-white dark:bg-gray-800' : 'bg-white';
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F';
+    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
+    const headerBgColor = isDarkMode ? 'bg-gray-700' : '#D4A373';
+
+
     if (title === "Average Order Value Calculation") {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
@@ -44,38 +43,65 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode 
                     <div className="space-y-3">
                         <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
                             <span className={`${fontWeight} ${textColor}`}>Total Investment:</span>
-                            <span className={`${valueTextColor}`}>
-                                ${calculation.productDetails.find(item => item.name === 'Total Investment')?.totalValue?.toFixed(2) || '0.00'}
-                            </span>
+                            <span className={`${valueTextColor}`}> ${calculation.productDetails.find(item => item.name === 'Total Investment')?.totalValue?.toFixed(2) || '0.00'} </span>
                         </div>
                         <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
                             <span className={`${fontWeight} ${textColor}`}>Total Orders:</span>
-                            <span className={`${valueTextColor}`}>
-                                {calculation.productDetails.find(item => item.name === 'Total Orders')?.totalValue || '0'}
-                            </span>
+                            <span className={`${valueTextColor}`}> {calculation.productDetails.find(item => item.name === 'Total Orders')?.totalValue || '0'} </span>
                         </div>
                         <div className={`flex justify-between ${isDarkMode ? 'bg-gray-100 dark:bg-gray-800' : 'bg-[#f6ebe3]'} py-2 px-3 rounded-md`}>
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>Average Order Value:</span>
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</span>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>);
+    }
+
+
+    if (title === "Total Profit Breakdown") {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className={`w-[90%] md:w-[400px] rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
+                        <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="space-y-3">
+                        <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
+                            <span className={`${fontWeight} ${textColor}`}>Total Revenue:</span>
+                            <span className={`${valueTextColor}`}> ${totalRevenue !== null ? totalRevenue.toFixed(2) : '0.00'} </span>
+                        </div>
+                        <div className={`flex justify-between ${rowBgLight} py-2 px-3 rounded-md`}>
+                            <span className={`${fontWeight} ${textColor}`}>Ordered Purchase Cost:</span>
+                            <span className={`${valueTextColor}`}> ${orderedPurchaseCost !== null ? orderedPurchaseCost.toFixed(2) : '0.00'} </span>
+                        </div>
+                        <div className={`flex justify-between ${isDarkMode ? 'bg-gray-100 dark:bg-gray-800' : 'bg-[#f6ebe3]'} py-2 px-3 rounded-md`}>
+                            <span className={`text-lg ${fontWeight} ${totalTextColor}`}>Total Profit:</span>
+                            <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${totalRevenue !== null && orderedPurchaseCost !== null ? (totalRevenue - orderedPurchaseCost).toFixed(2) : '0.00'}</span>
                         </div>
                     </div>
                 </div>
             </div>
         );
     }
+
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
             <div className={`w-[90%] md:w-[600px] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
-                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
-                        <X className="w-5 h-5" />
-                    </button>
+                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}> <X className="w-5 h-5" /> </button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr>
+                            <tr className={`${headerBgColor}`}>
                                 <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Product Name</th>
                                 <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Date</th>
                                 <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Month</th>
@@ -86,7 +112,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode 
                         </thead>
                         <tbody>
                             {calculation.productDetails && calculation.productDetails.map((product, index) => (
-                                <tr key={index} className={`${index % 2 === 0 ? rowBgLight : rowBgDark}`}>
+                                <tr key={index} className={index % 2 === 0 ? rowBgLight : rowBgDark}> {/* Alternating row colors */}
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.name}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
                                         {product.productAddDate ? new Date(product.productAddDate).toLocaleDateString() : 'N/A'}
@@ -97,13 +123,12 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode 
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${product.purchaseCost ? product.purchaseCost.toFixed(2) : '0.00'}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.stockQuantity}</td>
                                     <td className={`py-2 px-3 text-sm ${fontWeight} ${valueTextColor}`}>${product.totalValue ? product.totalValue.toFixed(2) : '0.00'}</td>
-                                </tr>
-                            ))}
+                                </tr>))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan="3" className={`py-2 px-3 text-[20px] ${fontWeight} ${totalTextColor} text-right`}>Total:</td>
-                                <td className={`py-2 px-3 text-[20px] ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</td>
+                                <td colSpan="5" className={`py-2 px-3 text-lg ${fontWeight} ${totalTextColor} text-right`}>Total:</td>
+                                <td className={`py-2 px-3 text-lg ${fontWeight} ${totalTextColor}`}>${calculation.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -112,83 +137,18 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode 
         </div>
     );
 };
-
-const MonthlyInvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode }) => {
-    const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
-    const fontWeight = 'font-semibold';
-    const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : 'text-[#A2574F]';
-    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
-    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
-    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
-    const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
-    const totalTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
-    const getMonthName = (monthNumber) => {
-        const date = new Date(2000, monthNumber - 1, 1);
-        return date.toLocaleString('default', { month: 'long' });
-    };
-    const monthName = calculation?.month ? getMonthName(calculation.month) : '';
-    const formattedMonthYear = monthName ? `${monthName}-${calculation?.year}` : '';
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
-            <div className={`w-[90%] md:w-[600px] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>{title}</h3>
-                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-                <div className="overflow-x-auto">
-                    <h4 className={`text-lg ${textColor} ${fontWeight} mb-2`}>
-                        Month: {formattedMonthYear}
-                    </h4>
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr>
-                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Product Name</th>
-                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Date</th>
-                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Cost</th>
-                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Stock Quantity</th>
-                                <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Total Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {calculation?.productDetails?.map((product, index) => (
-                                <tr key={index} className={`${index % 2 === 0 ? rowBgLight : rowBgDark}`}>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.name}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(product.productAddDate).toLocaleDateString()}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${product.purchaseCost ? product.purchaseCost.toFixed(2) : '0.00'}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{product.stockQuantity}</td>
-                                    <td className={`py-2 px-3 text-sm ${fontWeight} ${valueTextColor}`}>${product.totalValue ? product.totalValue.toFixed(2) : '0.00'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan="4" className={`py-2 px-3 text-[20px] ${fontWeight} ${totalTextColor} text-right`}>Total:</td>
-                                <td className={`py-2 px-3 text-[20px] ${fontWeight} ${totalTextColor}`}>${calculation?.totalPurchaseValue ? calculation.totalPurchaseValue.toFixed(2) : '0.00'}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 // Revenue CalculationDisplay for Order Details
 const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, error, isDarkMode }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
     const fontWeight = 'font-semibold';
     const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
     const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
-    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]'; // Changed header text color
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : 'text-[#A2574F]';
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
-
+    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
     if (!isOpen) {
         return null;
     }
@@ -198,8 +158,7 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
                 <div className={`w-[90%] md:w-[600px] rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
                     <h3 className={`text-xl font-semibold text-center ${titleColor} mb-4`}>Loading Order Details...</h3>
                 </div>
-            </div>
-        );
+            </div>);
     }
     if (error) {
         return (
@@ -209,10 +168,8 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
                     <p className="text-red-500">{error}</p>
                     <button onClick={onClose} className={`mt-4 p-2 rounded-md bg-gray-200 ${textColor}`}>Close</button>
                 </div>
-            </div>
-        );
+            </div>);
     }
-
     const totalPoints = orderDetails.reduce((sum, order) => sum + (order.totalPoints || 0), 0);
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
@@ -224,29 +181,29 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
                     </button>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left font-28 ">
+                    <table className="w-full text-left">
                         <thead>
-                            <tr>
-                                <th className={`py-2 px-3 pl-18 text-sm ${fontWeight} ${headerTextColor}`}>Order ID</th>
+                            <tr className={`${headerBgColor}`}>
+                                <th className={`py-2 px-3 pl-17 text-sm ${fontWeight} ${headerTextColor}`}>Order ID</th>
                                 <th className={`py-2 px-3 pl-18 text-sm ${fontWeight} ${headerTextColor}`}>User ID</th>
-                                <th className={`py-2 px-3 pl-12 text-sm ${fontWeight} ${headerTextColor}`}>Created At</th>
-                                <th className={`py-2 px-3 pr-10 text-sm ${fontWeight} ${headerTextColor}`}>Total Points</th>
+                                <th className={`py-2 px-1 pl-10 text-sm ${fontWeight} ${headerTextColor}`}>Created At</th>
+                                <th className={`py-2 px-0.3 text-sm ${fontWeight} ${headerTextColor}`}>Total Points</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {orderDetails.map((order) => (
-                                <tr key={order._id} className={rowBgLight}>
+                            {orderDetails.map((order, index) => (
+                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}> {/* Alternating row colors */}
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order.userId}</td>
                                     <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleString()}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order.totalPoints}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${order.totalPoints ? order.totalPoints.toFixed(2) : '0.00'}</td> {/* Added dollar sign */}
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan="3" className={`py-2 px-3 text-[20px] ${fontWeight} ${headerTextColor} text-right`}>Total:</td>
-                                <td className={`py-2 px-3 text-[20px] ${fontWeight} ${valueTextColor}`}>{totalPoints}</td>
+                                <td colSpan="3" className={`py-2 px-3 text-lg ${fontWeight} ${headerTextColor} text-right`}>Total:</td>
+                                <td className={`py-2 px-3 text-lg ${fontWeight} ${valueTextColor}`}>${totalPoints.toFixed(2)}</td> {/* Added dollar sign */}
                             </tr>
                         </tfoot>
                     </table>
@@ -256,18 +213,179 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
     );
 };
 
+
+
+
+// Monthly Revenue Details Modal
+const MonthlyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, error, isDarkMode }) => {
+    const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
+    const fontWeight = 'font-semibold';
+    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]'; // Keep the existing light row background
+    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';   // Keep the existing dark row background
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]'; // Changed header text color
+    const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
+    const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
+    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
+    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
+    if (!isOpen) return null;
+    if (loading) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                    <h3 className={`text-xl font-semibold text-center ${titleColor} mb-4`}>
+                        Loading Monthly Revenue Details...
+                    </h3>
+                </div>
+            </div>
+        );
+    }
+    if (error) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                    <h3 className={`text-xl font-semibold text-center ${titleColor} mb-4`}>Error Loading Monthly Revenue Details</h3>
+                    <p className="text-red-500">{error}</p>
+                    <button onClick={onClose} className={`mt-4 p-2 rounded-md bg-gray-200 ${textColor}`}>Close</button>
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+            <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>
+                        Monthly Revenue Details
+                    </h3>
+                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr>
+                                <th className={`py-2 px-3 pl-18 text-sm ${fontWeight} ${headerTextColor}`}>Order ID</th>
+                                <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Order Date</th>
+                                <th className={`py-2 px-0 text-sm ${fontWeight} ${headerTextColor}`}>Selling Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {orderDetails.map((order, index) => (
+                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
+                                        {order.totalPoints ? `$${order.totalPoints.toFixed(2)}` : '$0.00'}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan="2" className={`py-2 px-3 text-lg ${fontWeight} ${headerTextColor} text-right`}>Total:</td>
+                                <td className={`py-2 px-3 text-lg ${fontWeight} ${valueTextColor}`}>
+                                    {orderDetails.reduce((sum, order) => sum + (order.totalPoints || 0), 0).toFixed(2)}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+// Weekly Revenue Details Modal
+const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, error, isDarkMode }) => {
+    const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
+    const fontWeight = 'font-semibold';
+    const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
+    const rowBgDark = isDarkMode ? 'bg-white dark:bg-gray-700' : 'bg-[#f2ebe1]';
+    const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
+    const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
+    const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
+    const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
+    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
+    if (!isOpen) return null;
+    if (loading) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                    <h3 className={`text-xl font-semibold text-center ${titleColor} mb-4`}>
+                        Loading Weekly Revenue Details...
+                    </h3>
+                </div>
+            </div>);
+    }
+    if (error) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                    <h3 className={`text-xl font-semibold text-center ${titleColor} mb-4`}> Error Loading Weekly Revenue Details </h3>
+                    <p className="text-red-500">{error}</p>
+                    <button onClick={onClose} className={`mt-4 p-2 rounded-md bg-gray-200 ${textColor}`}> Close </button>
+                </div>
+            </div>);
+    }
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+            <div className={`w-[90%] md:w-[90%] max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 border relative ${modalBg}`}>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className={`text-xl ${fontWeight} ${titleColor} mb-4 text-center underline flex-grow`}>
+                        Weekly Revenue Details
+                    </h3>
+                    <button onClick={onClose} className={`p-1 rounded-full hover:bg-gray-200 ${closeButtonColor}`}>
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className={`${headerBgColor}`}>
+                                <th className={`py-2 px-3 pl-17 text-sm ${fontWeight} ${headerTextColor}`}>Order ID</th>
+                                <th className={`py-2 px-1.5 text-sm ${fontWeight} ${headerTextColor}`}>Order Date</th>
+                                <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Order Day</th> {/* Added Day Column */}
+                                <th className={`py-2 px-1 text-sm ${fontWeight} ${headerTextColor}`}>Selling Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {orderDetails.map((order, index) => {
+                                const createdAt = new Date(order.createdAt);
+                                const date = createdAt.toLocaleDateString();
+                                const day = createdAt.toLocaleDateString('en-US', { weekday: 'long' });
+                                return (
+                                    <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
+                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
+                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{date}</td>
+                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{day}</td> {/* Display Day */}
+                                        <td className={`py-2 px-3 text-sm ${valueTextColor}`}>
+                                            ${order.totalPoints ? order.totalPoints.toFixed(2) : '0.00'}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan="3" className={`py-2 px-3 text-lg ${fontWeight} ${headerTextColor} text-right`}>Total:</td> {/* Adjusted colSpan */}
+                                <td className={`py-2 px-3 text-lg ${fontWeight} ${valueTextColor}`}>
+                                    ${orderDetails.reduce((sum, order) => sum + (order.totalPoints || 0), 0).toFixed(2)}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
 const RevenuePage = () => {
     const { isDarkMode } = useContext(DarkmodeContext);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('Revenue');
-    const [monthlyPurchaseCostData, setMonthlyPurchaseCostData] = useState(null);
-    const [monthlyInvestmentDetails, setMonthlyInvestmentDetails] = useState(null);
-    const [loadingMonthlyInvestmentDetails, setLoadingMonthlyInvestmentDetails] = useState(true);
-    const [errorMonthlyInvestmentDetails, setErrorMonthlyInvestmentDetails] = useState(null);
-    const [loadingMonthlyPurchaseCost, setLoadingMonthlyPurchaseCost] = useState(true);
-    const [errorMonthlyPurchaseCost, setErrorMonthlyPurchaseCost] = useState(null);
     const [orders, setOrders] = useState([]);
-    const [totalRevenue, setTotalRevenue] = useState(null);
     const [showTotalRevenueDetails, setShowTotalRevenueDetails] = useState(false);
     const [totalRevenueOrderDetails, setTotalRevenueOrderDetails] = useState([]);
     const [loadingTotalRevenueDetails, setLoadingTotalRevenueDetails] = useState(false);
@@ -280,15 +398,41 @@ const RevenuePage = () => {
     const [productPurchaseDetails, setProductPurchaseDetails] = useState([]);
     const [loadingTotalPurchaseValue, setLoadingTotalPurchaseValue] = useState(true);
     const [errorTotalPurchaseValue, setErrorTotalPurchaseValue] = useState(null);
+    const [orderedPurchaseCost, setOrderedPurchaseCost] = useState(0);
+    const [monthlyRevenue, setMonthlyRevenue] = useState(null);
+    const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true);
+    const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null);
+    const [weeklyRevenue, setWeeklyRevenue] = useState(null);
+    const [loadingWeeklyRevenue, setLoadingWeeklyRevenue] = useState(true);
+    const [errorWeeklyRevenue, setErrorWeeklyRevenue] = useState(null);
+    const [showWeeklyRevenueDetails, setShowWeeklyRevenueDetails] = useState(false);
+    const [weeklyRevenueOrderDetails, setWeeklyRevenueOrderDetails] = useState([]);
+    const [loadingWeeklyRevenueDetails, setLoadingWeeklyRevenueDetails] = useState(false);
+    const [errorWeeklyRevenueDetails, setErrorWeeklyRevenueDetails] = useState(null);
+    const [showMonthlyRevenueDetails, setShowMonthlyRevenueDetails] = useState(false);
+    const [monthlyRevenueOrderDetails, setMonthlyRevenueOrderDetails] = useState([]);
+    const [loadingMonthlyRevenueDetails, setLoadingMonthlyRevenueDetails] = useState(false);
+    const [totalRevenue, setTotalRevenue] = useState(null);
+    const [errorMonthlyRevenueDetails, setErrorMonthlyRevenueDetails] = useState(null);
+   
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
         setShowCalculation(title);
-        if (title === 'Total Revenue') {
+        if (title === 'Total Investment') {
+        }
+        else if (title === 'Total Revenue') {
             setShowTotalRevenueDetails(true);
             fetchTotalRevenueOrderDetails();
+        } else if (title === 'Weekly Revenue') {
+            setShowWeeklyRevenueDetails(true);
+            fetchWeeklyRevenueOrderDetails();
+        } else if (title === 'Monthly Revenue') {
+            setShowMonthlyRevenueDetails(true);
+            fetchMonthlyRevenueOrderDetails();
+        } else if (title === 'Average Order Value') {
+        } else if (title === 'Total Profit') {
         }
     };
-
     useEffect(() => {
         const fetchTotalPurchaseValueDetails = async () => {
             setLoadingTotalPurchaseValue(true);
@@ -309,52 +453,6 @@ const RevenuePage = () => {
                 setLoadingTotalPurchaseValue(false);
             }
         };
-
-        const fetchMonthlyPurchaseCost = async () => {
-            setLoadingMonthlyPurchaseCost(true);
-            setErrorMonthlyPurchaseCost(null);
-
-            try {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-
-                const response = await fetch(`http://localhost:4000/api/products/monthly-purchase-cost?year=${year}&month=${month}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setMonthlyPurchaseCostData(data);
-            } catch (error) {
-                console.error('Error fetching monthly purchase cost:', error);
-                setErrorMonthlyPurchaseCost('Failed to fetch monthly purchase cost.');
-            } finally {
-                setLoadingMonthlyPurchaseCost(false);
-            }
-        };
-
-        const fetchDetailedMonthlyPurchaseCost = async () => {
-            setLoadingMonthlyInvestmentDetails(true);
-            setErrorMonthlyInvestmentDetails(null);
-
-            try {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-                const response = await fetch(`http://localhost:4000/api/products/monthly-purchase-cost/details?year=${year}&month=${month}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setMonthlyInvestmentDetails(data);
-            } catch (error) {
-                console.error('Error fetching detailed monthly purchase cost:', error);
-                setErrorMonthlyInvestmentDetails('Failed to fetch detailed monthly purchase cost.');
-            } finally {
-                setLoadingMonthlyInvestmentDetails(false);
-            }
-        };
-
         const fetchTotalRevenueOrderDetails = async () => {
             setLoadingTotalRevenueDetails(true);
             setErrorTotalRevenueDetails(null);
@@ -380,10 +478,10 @@ const RevenuePage = () => {
                 setLoadingTotalRevenueDetails(false);
             }
         };
-
         const fetchAllOrdersForRevenue = async () => {
             setLoadingTotalRevenue(true);
             setErrorTotalRevenue(null);
+            console.log("Fetching all orders for revenue calculation...");
             try {
                 const response = await axios.get(`${backendUrl}/api/orders/all`, {
                     headers: {
@@ -391,34 +489,159 @@ const RevenuePage = () => {
                     },
                     withCredentials: true,
                 });
-                console.log("Orders API Response:", response.data);
                 if (response.data?.success && response.data.orders) {
-                    console.log("Fetched Orders:", response.data.orders);
-                    setOrders(response.data.orders);
-                    const calculatedTotalRevenue = response.data.orders.reduce((sum, order) => {
-                        console.log("Current Order Total Points:", order.totalPoints);
-                        return sum + (order.totalPoints || 0);
-                    }, 0);
-                    console.log("Calculated Total Revenue (from totalPoints):", calculatedTotalRevenue);
+                    const fetchedOrders = response.data.orders;
+                    setOrders(fetchedOrders);
+                    let calculatedTotalRevenue = 0;
+                    let calculatedOrderedPurchaseCost = 0;
+                    for (const order of fetchedOrders) {
+                        calculatedTotalRevenue += (order.totalPoints || 0);
+                        if (order.items && Array.isArray(order.items)) {
+                            for (const item of order.items) {
+                                try {
+                                    const productResponse = await axios.get(`${backendUrl}/api/products/${item._id}`);
+                                    if (productResponse.data?.success && productResponse.data.product) {
+                                        const purchaseCost = productResponse.data.product.purchaseCost || 0;
+                                        const quantity = item.quantity || 0;
+                                        const itemPurchaseCost = purchaseCost * quantity;
+                                        calculatedOrderedPurchaseCost += itemPurchaseCost;
+
+
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching product details for ID: ${item._id}`, error);
+                                }
+                            }
+                        }
+                    }
                     setTotalRevenue(calculatedTotalRevenue);
+                    setOrderedPurchaseCost(calculatedOrderedPurchaseCost);
                 } else {
-                    setErrorTotalRevenue(response.data?.message || 'Failed to fetch orders for revenue calculation.');
+                    console.error("Failed to fetch orders. Response data:", response.data);
+                    setErrorTotalRevenue(response.data?.message || 'Failed to fetch orders.');
                 }
             } catch (error) {
-                console.error('Error fetching orders for revenue:', error);
-                setErrorTotalRevenue(error.message || 'An error occurred while fetching orders for revenue.');
+                console.error('Error fetching orders:', error);
+                setErrorTotalRevenue(error.message || 'An error occurred while fetching orders.');
             } finally {
                 setLoadingTotalRevenue(false);
+                console.log("Order fetching and revenue/cost calculation complete. Loading state set to false.");
             }
         };
 
+
+       
+        const fetchMonthlyRevenueOrderDetails = async () => {
+            setLoadingMonthlyRevenueDetails(true);
+            setErrorMonthlyRevenueDetails(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Monthly Revenue Details:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const currentYear = now.getFullYear();
+                    const currentMonth = now.getMonth();
+
+
+
+
+                    const monthlyOrdersDetails = response.data.orders.filter(order => {
+                        const createdAt = new Date(order.createdAt);
+                        return createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth;
+                    });
+                    setMonthlyRevenueOrderDetails(monthlyOrdersDetails);
+                } else {
+                    setErrorMonthlyRevenueDetails(response.data?.message || 'Failed to fetch monthly order details.');
+                }
+            } catch (error) {
+                console.error('Error fetching monthly order details:', error);
+                setErrorMonthlyRevenueDetails(error?.message || 'An error occurred while fetching monthly order details.');
+            } finally {
+                setLoadingMonthlyRevenueDetails(false);
+            }
+        };
+        const fetchWeeklyRevenue = async () => {
+            setLoadingWeeklyRevenue(true);
+            setErrorWeeklyRevenue(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Weekly Revenue:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    const weeklyOrders = response.data.orders.filter(order => {
+                        const createdAt = new Date(order.createdAt);
+                        return createdAt >= startOfWeek && createdAt <= endOfWeek;
+                    });
+                    const calculatedWeeklyRevenue = weeklyOrders.reduce((sum, order) => sum + (order.totalPoints || 0), 0);
+                    setWeeklyRevenue(calculatedWeeklyRevenue);
+                } else {
+                    setErrorWeeklyRevenue(response.data?.message || 'Failed to fetch orders for weekly revenue calculation.');
+                }
+            } catch (error) {
+                console.error('Error fetching orders for weekly revenue:', error);
+                setErrorWeeklyRevenue(error?.message || 'An error occurred while fetching orders for weekly revenue.');
+            } finally {
+                setLoadingWeeklyRevenue(false);
+            }
+        };
+        const fetchWeeklyRevenueOrderDetails = async () => {
+            setLoadingWeeklyRevenueDetails(true);
+            setErrorWeeklyRevenueDetails(null);
+            try {
+                const response = await axios.get(`${backendUrl}/api/orders/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                    withCredentials: true,
+                });
+                console.log("All Orders Response for Weekly Revenue Details:", response.data);
+                if (response.data?.success && response.data.orders) {
+                    const now = new Date();
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    const weeklyOrdersDetails = response.data.orders.filter(order => {
+                        const createdAt = new Date(order.createdAt);
+                        return createdAt >= startOfWeek && createdAt <= endOfWeek;
+                    });
+                    setWeeklyRevenueOrderDetails(weeklyOrdersDetails);
+                } else {
+                    setErrorWeeklyRevenueDetails(response.data?.message || 'Failed to fetch weekly order details.');
+                }
+            } catch (error) {
+                console.error('Error fetching weekly order details:', error);
+                setErrorWeeklyRevenueDetails(error?.message || 'An error occurred while fetching weekly order details.');
+            } finally {
+                setLoadingWeeklyRevenueDetails(false);
+            }
+        };
         fetchTotalPurchaseValueDetails();
-        fetchMonthlyPurchaseCost();
-        fetchDetailedMonthlyPurchaseCost()
         fetchAllOrdersForRevenue();
         fetchTotalRevenueOrderDetails()
+        fetchMonthlyPurchaseCost();
+        fetchMonthlyRevenueOrderDetails();
+        fetchWeeklyRevenue();
+        fetchWeeklyRevenueOrderDetails();
     }, [backendUrl]);
-
     const totalProfit = orders.reduce((sum, order) => sum + (order.revenue - order.cost), 0);
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -429,33 +652,25 @@ const RevenuePage = () => {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
-
     const monthlyOrders = orders.filter(order => {
         const orderDate = new Date(order.date);
         return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
     });
-
     const monthlyInvestment = monthlyOrders.reduce((sum, order) => sum + order.revenue, 0);
     const monthlyProfit = monthlyOrders.reduce((sum, order) => sum + (order.revenue - order.cost), 0);
-
     const weeklyOrders = orders.filter(order => {
         const orderDate = new Date(order.date);
         return orderDate >= startOfWeek && orderDate <= endOfWeek;
     });
-    const weeklyRevenue = weeklyOrders.reduce((sum, order) => sum + order.revenue, 0);
     const weeklyProfit = weeklyOrders.reduce((sum, order) => sum + (order.revenue - order.cost), 0);
-
     const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
     const totalOrdersCount = orders.length;
-
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
-
     const handleCloseCalculation = () => {
         setShowCalculation(null);
     };
-
     return (
         <div className={`flex min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-[#F5F5F5]'}`}>
             <AdminNavbar
@@ -465,9 +680,11 @@ const RevenuePage = () => {
                 setActiveTab={setActiveTab}
             />
 
+
+
+
             <div className="flex-1 p-6">
                 <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-white' : 'text-[#64332d]'} mb-8`}><u>Revenue & Profit Overview</u></h2>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <Card title="Total Investment" onClick={() => handleCardClick("Total Investment")}>
                         <div className="flex items-center justify-center">
@@ -495,13 +712,17 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total revenue generated from all orders.</p>
                     </Card>
-                    <Card title="Total Profit" onClick={() => handleCardClick("Total Profit")}>
+                    <Card title="Total Profit" onClick={() => handleCardClick('Total Profit')}>
                         <div className="flex items-center justify-center">
-                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${totalProfit.toFixed(2)}</p>
+                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : (totalRevenue !== null && orderedPurchaseCost !== null && (totalRevenue - orderedPurchaseCost) > 0 ? 'text-[#2E7D32]' : 'text-[#F44336]')}`}>
+                                ${totalRevenue !== null && orderedPurchaseCost !== null ? (totalRevenue - orderedPurchaseCost).toFixed(2) : '0.00'}
+                            </p>
                         </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total profit after deducting costs.</p>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Net earnings after deducting product costs.</p>
                     </Card>
+
+
                     <Card title="Average Order Value" onClick={() => handleCardClick("Average Order Value")}>
                         <div className="flex items-center justify-center">
                             <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
@@ -509,30 +730,12 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Average revenue generated per order.</p>
                     </Card>
-                    <Card title="Monthly Investment" onClick={() => handleCardClick("Monthly Investment")}>
-                        <div className="flex items-center justify-center">
-                            <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
-                            {loadingMonthlyPurchaseCost ? (
-                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>Loading...</p>
-                            ) : errorMonthlyPurchaseCost ? (
-                                <p className={`text-red-500`}>{errorMonthlyPurchaseCost}</p>
-                            ) : (
-                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${monthlyPurchaseCostData?.monthlyPurchaseCost ? monthlyPurchaseCostData.monthlyPurchaseCost.toFixed(2) : '0.00'}</p>
-                            )}
-                        </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total purchase cost for the current month ({new Date().toLocaleString('default', { month: 'long' })}).</p>
-                    </Card>
-                    <Card title="Monthly Profit" onClick={() => handleCardClick("Monthly Profit")}>
-                        <div className="flex items-center justify-center">
-                            <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>{monthlyProfit.toFixed(2)}</p>
-                        </div>
-                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Profit for the current month (April 2025).</p>
-                    </Card>
+
+
                     <Card title="Weekly Revenue" onClick={() => handleCardClick("Weekly Revenue")}>
                         <div className="flex items-center justify-center">
                             <CircleDollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
-                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${weeklyRevenue.toFixed(2)}</p>
+                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${weeklyRevenue !== null ? weeklyRevenue.toFixed(2) : '0.00'}</p>
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Revenue for the current week (starting Sunday).</p>
                     </Card>
@@ -543,17 +746,38 @@ const RevenuePage = () => {
                         </div>
                         <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Profit for the current week (starting Sunday).</p>
                     </Card>
+                    <Card title="Ordered Purchase Cost" onClick={() => handleCardClick("Ordered Purchase Cost")}>
+                        <div className="flex items-center justify-center">
+                            <DollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-lime-400' : 'text-lime-600'}`} />
+                            <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>
+                                ${orderedPurchaseCost !== null ? orderedPurchaseCost.toFixed(2) : '0.00'}
+                            </p>
+                        </div>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total cost of products in all orders.</p>
+                    </Card>
 
 
+                    <Card title="Monthly Revenue" onClick={() => handleCardClick("Monthly Revenue")}>
+                        <div className="flex items-center justify-center">
+                            <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                            {loadingMonthlyRevenue ? (
+                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>Loading...</p>
+                            ) : errorMonthlyRevenue ? (
+                                <p className={`text-red-500`}>{errorMonthlyRevenue}</p>
+                            ) : (
+                                <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>${monthlyRevenue !== null ? monthlyRevenue.toFixed(2) : '0.00'}</p>
+                            )}
+                        </div>
+                        <p className={`text-sm text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Revenue for the current month (May 2025).</p>
+                    </Card>
                 </div>
-
                 {showCalculation === 'Total Investment' && (
-                    <InvestmentCalculationDisplay title="Total Investment History"
+                    <InvestmentCalculationDisplay
+                        title="Total Investment History"
                         calculation={calculationDetails}
                         onClose={handleCloseCalculation}
                     />
                 )}
-
                 {showTotalRevenueDetails && (
                     <TotalRevenueDetailsModal
                         isOpen={showTotalRevenueDetails}
@@ -564,64 +788,31 @@ const RevenuePage = () => {
                         isDarkMode={isDarkMode}
                     />
                 )}
-
                 {showCalculation === 'Total Profit' && (
                     <InvestmentCalculationDisplay
-                        title="Total Profit Calculation"
-                        calculation={{
-                            productDetails: orders.map(o => ({
-                                name: `Order ID: ${o.id}`,
-                                purchaseCost: o.cost,
-                                stockQuantity: 1,
-                                totalValue: o.revenue - o.cost,
-                            })),
-                            totalPurchaseValue: totalProfit,
-                        }}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
-
-                {showCalculation === 'Monthly Investment' && (
-                    <MonthlyInvestmentCalculationDisplay
-                        title="Monthly Investment History"
-                        calculation={monthlyInvestmentDetails}
-                        onClose={handleCloseCalculation}
+                        title="Total Profit Breakdown"
+                        onClose={() => setShowCalculation(null)}
                         isDarkMode={isDarkMode}
+                        totalRevenue={totalRevenue}
+                        orderedPurchaseCost={orderedPurchaseCost}
                     />
                 )}
-
-                {showCalculation === 'Monthly Profit' && (
-                    <InvestmentCalculationDisplay
-                        title="Monthly Profit Calculation"
-                        calculation={{
-                            productDetails: monthlyOrders.map(o => ({
-                                name: `Order ID: ${o.id}`,
-                                purchaseCost: o.cost,
-                                stockQuantity: 1,
-                                totalValue: o.revenue - o.cost,
-                            })),
-                            totalPurchaseValue: monthlyProfit,
-                        }}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
-
-                {showCalculation === 'Weekly Revenue' && (
-                    <InvestmentCalculationDisplay
-                        title="Weekly Reven"
-                        calculation={{
-                            productDetails: weeklyOrders.map(o => ({
-                                name: `Order ID: ${o.id}`,
-                                purchaseCost: 0,
-                                stockQuantity: 1,
-                                totalValue: o.revenue,
-                            })),
-                            totalPurchaseValue: weeklyRevenue,
-                        }}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
-
+                <MonthlyRevenueDetailsModal
+                    isOpen={showMonthlyRevenueDetails}
+                    onClose={() => setShowMonthlyRevenueDetails(false)}
+                    orderDetails={monthlyRevenueOrderDetails}
+                    loading={loadingMonthlyRevenueDetails}
+                    error={errorMonthlyRevenueDetails}
+                    isDarkMode={isDarkMode}
+                />
+                <WeeklyRevenueDetailsModal
+                    isOpen={showWeeklyRevenueDetails}
+                    onClose={() => setShowWeeklyRevenueDetails(false)}
+                    orderDetails={weeklyRevenueOrderDetails}
+                    loading={loadingWeeklyRevenueDetails}
+                    error={errorWeeklyRevenueDetails}
+                    isDarkMode={isDarkMode}
+                />
                 {showCalculation === 'Weekly Profit' && (
                     <InvestmentCalculationDisplay
                         title="Weekly Profit Calculation"
@@ -634,10 +825,7 @@ const RevenuePage = () => {
                             })),
                             totalPurchaseValue: weeklyProfit,
                         }}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
-
+                        onClose={handleCloseCalculation} />)}
                 {showCalculation === 'Average Order Value' && (
                     <InvestmentCalculationDisplay
                         title="Average Order Value Calculation"
@@ -645,17 +833,12 @@ const RevenuePage = () => {
                             productDetails: [
                                 { name: 'Total Investment', totalValue: totalRevenue },
                                 { name: 'Total Orders', totalValue: totalOrdersCount },
-                                { name: 'Average Order Value', totalValue: averageOrderValue },
-                            ],
+                                { name: 'Average Order Value', totalValue: averageOrderValue },],
                             totalPurchaseValue: averageOrderValue,
                         }}
-                        onClose={handleCloseCalculation}
-                    />
-                )}
-
-            </div>
-        </div>
-    );
+                        onClose={handleCloseCalculation} />
+                )} </div> </div>);
 };
+
 
 export default RevenuePage;
