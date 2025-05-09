@@ -25,6 +25,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
     const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F';
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
+    const headerBgColor = isDarkMode ? 'bg-gray-700' : '#D4A373';
 
     if (title === "Average Order Value Calculation") {
         return (
@@ -78,7 +79,6 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>Total Profit:</span>
                             <span className={`text-lg ${fontWeight} ${totalTextColor}`}>${totalRevenue !== null && orderedPurchaseCost !== null ? (totalRevenue - orderedPurchaseCost).toFixed(2) : '0.00'}</span>
                         </div>
-                        {/* You can add more detailed breakdown here if needed */}
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@ const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode,
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className={`${headerBgColor}`}> {/* Added header background color */}
+                            <tr className={`${headerBgColor}`}>
                                 <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Product Name</th>
                                 <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Date</th>
                                 <th className={`py-2 px-3 text-sm ${fontWeight} ${headerTextColor}`}>Purchase Month</th>
@@ -406,10 +406,13 @@ const RevenuePage = () => {
     const [loadingMonthlyRevenueDetails, setLoadingMonthlyRevenueDetails] = useState(false);
     const [totalRevenue, setTotalRevenue] = useState(null);
     const [errorMonthlyRevenueDetails, setErrorMonthlyRevenueDetails] = useState(null);
+    
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
         setShowCalculation(title);
-        if (title === 'Total Revenue') {
+        if (title === 'Total Investment') {
+        }
+        else if (title === 'Total Revenue') {
             setShowTotalRevenueDetails(true);
             fetchTotalRevenueOrderDetails();
         } else if (title === 'Weekly Revenue') {
@@ -419,9 +422,7 @@ const RevenuePage = () => {
             setShowMonthlyRevenueDetails(true);
             fetchMonthlyRevenueOrderDetails();
         } else if (title === 'Average Order Value') {
-            // Open the modal to show calculation details
         } else if (title === 'Total Profit') {
-            // Open the modal to show total profit breakdown
         }
     };
     useEffect(() => {
@@ -496,7 +497,7 @@ const RevenuePage = () => {
                                         const quantity = item.quantity || 0;
                                         const itemPurchaseCost = purchaseCost * quantity;
                                         calculatedOrderedPurchaseCost += itemPurchaseCost;
-                                        console.warn(`Could not fetch product details for ID: ${item._id}. Skipping cost calculation for this item.`);
+
                                     }
                                 } catch (error) {
                                     console.error(`Error fetching product details for ID: ${item._id}`, error);
@@ -519,27 +520,7 @@ const RevenuePage = () => {
             }
         };
 
-        const fetchMonthlyPurchaseCost = async () => {
-            setLoadingMonthlyPurchaseCost(true);
-            setErrorMonthlyPurchaseCost(null);
-            try {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-
-                const response = await fetch(`http://localhost:4000/api/products/monthly-purchase-cost?year=${year}&month=${month}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setMonthlyPurchaseCostData(data);
-            } catch (error) {
-                console.error('Error fetching monthly purchase cost:', error);
-                setErrorMonthlyPurchaseCost('Failed to fetch monthly purchase cost.');
-            } finally {
-                setLoadingMonthlyPurchaseCost(false);
-            }
-        };
+       
         const fetchMonthlyRevenueOrderDetails = async () => {
             setLoadingMonthlyRevenueDetails(true);
             setErrorMonthlyRevenueDetails(null);
@@ -774,7 +755,8 @@ const RevenuePage = () => {
                     </Card>
                 </div>
                 {showCalculation === 'Total Investment' && (
-                    <InvestmentCalculationDisplay title="Total Investment History"
+                    <InvestmentCalculationDisplay
+                        title="Total Investment History"
                         calculation={calculationDetails}
                         onClose={handleCloseCalculation}
                     />
