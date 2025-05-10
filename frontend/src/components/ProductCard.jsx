@@ -1,31 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiStar } from "react-icons/fi";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
-  const { addToCart, backendUrl } = useContext(AppContext);
-  const [stockQuantity, setStockQuantity] = useState(product.stockQuantity || 0);
-
-  useEffect(() => {
-    const fetchStock = async () => {
-      try {
-        const response = await axios.get(`${backendUrl}/api/products/${product.id}`);
-        const updatedStock = response.data.product?.stockQuantity;
-        if (typeof updatedStock === "number") {
-          setStockQuantity(updatedStock);
-        } else {
-          console.warn("Stock quantity not found in product:", response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching stock data:", error);
-      }
-    };
-
-    fetchStock();
-  }, [backendUrl, product.id]);
+  const { addToCart } = useContext(AppContext);
 
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
@@ -33,12 +13,12 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    if (stockQuantity > 0) {
+    if (product.stockQuantity > 0) {
       addToCart(product, 1);
     }
   };
 
-  const inStock = stockQuantity > 0;
+  const inStock = product.stockQuantity > 0;
 
   return (
     <div
@@ -51,6 +31,7 @@ const ProductCard = ({ product }) => {
           src={product.imageUrl}
           alt={product.name}
           className="w-full h-70 p-2"
+          loading="lazy"
         />
         {product.discount && (
           <div className="absolute top-3 right-3 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -89,16 +70,14 @@ const ProductCard = ({ product }) => {
 
           {/* Stock Display */}
           <p className={`text-sm mt-2 ${inStock ? "text-green-600" : "text-red-600"}`}>
-            {inStock ? `In Stock (${stockQuantity})` : "Out of Stock"}
+            {inStock ? `In Stock (${product.stockQuantity})` : "Out of Stock"}
           </p>
         </div>
 
         {/* Add to Cart Button */}
         <button
           className={`mt-4 w-full text-white py-2 rounded-lg font-medium transition ${
-            inStock
-              ? "bg-gray-900 hover:bg-gray-800"
-              : "bg-gray-400 cursor-not-allowed"
+            inStock ? "bg-gray-900 hover:bg-gray-800" : "bg-gray-400 cursor-not-allowed"
           }`}
           onClick={handleAddToCart}
           disabled={!inStock}
@@ -110,4 +89,4 @@ const ProductCard = ({ product }) => {
   );
 };
 
-export default ProductCard;
+export default React.memo(ProductCard);
