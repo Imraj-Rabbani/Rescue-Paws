@@ -12,8 +12,8 @@ const Cart = () => {
     updateCartItemQuantity,
     removeFromCart,
     isLoggedIn,
-    backendUrl,
-    setCart
+    setCart,
+    backendUrl
   } = useContext(AppContext);
 
   const [stockMap, setStockMap] = useState({});
@@ -40,40 +40,40 @@ const Cart = () => {
     }
   };
 
+  // ✅ Realtime stock fetch on mount
   useEffect(() => {
-    const fetchStock = async () => {
+    const fetchLiveStock = async () => {
       const stockData = {};
       const adjustedCart = [];
 
-      for (const item of cart) {
+      await Promise.all(cart.map(async (item) => {
         try {
-          const response = await axios.get(`${backendUrl}/api/products/${item.id}`);
-          const stockQty = response.data.product?.stockQuantity || 0;
+          const res = await axios.get(`${backendUrl}/api/products/${item.id}`);
+          const stockQty = res.data.product?.stockQuantity ?? 0;
           stockData[item.id] = stockQty;
 
           if (stockQty === 0) {
             toast.info(`${item.name} is out of stock and removed from cart.`);
-            continue;
-          }
-
-          if (item.quantity > stockQty) {
+          } else if (item.quantity > stockQty) {
             toast.info(`Adjusted ${item.name} quantity to ${stockQty}.`);
             adjustedCart.push({ ...item, quantity: stockQty });
           } else {
             adjustedCart.push(item);
           }
-        } catch (error) {
-          console.error(`Failed to fetch stock for ${item.name}`, error);
+        } catch (err) {
+          console.error(`Error fetching stock for ${item.name}`, err);
+          stockData[item.id] = 0;
         }
-      }
+      }));
 
       setStockMap(stockData);
       setCart(adjustedCart);
     };
 
-    fetchStock();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (cart.length > 0) {
+      fetchLiveStock();
+    }
+  }, []); // only on mount
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -93,7 +93,7 @@ const Cart = () => {
           ) : (
             <div className="space-y-6">
               {cart.map((item) => {
-                const stock = stockMap[item.id] ?? 0;
+                const stock = stockMap[item.id] ?? item.stockQuantity ?? 0;
                 return (
                   <div key={item.id} className="flex gap-4 border-b pb-4">
                     <img

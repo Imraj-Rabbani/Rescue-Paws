@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { AppContext } from '../context/AppContext';
 
 const CategoryPage = () => {
@@ -17,9 +17,12 @@ const CategoryPage = () => {
     accessories: 'Accessories'
   };
 
-  const filteredProducts = productData.filter(
-    p => p.category?.toLowerCase() === category.toLowerCase()
-  );
+  // ✅ Memoize for performance
+  const filteredProducts = useMemo(() => {
+    return productData.filter(
+      p => p.category?.toLowerCase() === category.toLowerCase()
+    );
+  }, [productData, category]);
 
   return (
     <div>
@@ -34,7 +37,7 @@ const CategoryPage = () => {
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id || product._id} product={product} />
             ))}
           </div>
         ) : (

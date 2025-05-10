@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useMemo } from 'react';
 import ProductCard from '../components/ProductCard';
 import ProductNavbar from '../components/ProductNavbar';
 import Footer from '../components/Footer';
@@ -13,23 +13,27 @@ const Products = () => {
   const itemsPerPage = 12;
   const categories = ['all', 'tech', 'food', 'toys', 'health', 'accessories'];
 
-  // Prevent redundant fetching on refresh
   useEffect(() => {
     if (productData.length === 0) {
       fetchProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Safe because fetchProducts is stable in context
 
-  const filteredProducts =
-    selectedCategory === 'all'
+  // 🔁 Memoized filtering
+  const filteredProducts = useMemo(() => {
+    return selectedCategory === 'all'
       ? productData
       : productData.filter(p => p.category?.toLowerCase() === selectedCategory);
+  }, [selectedCategory, productData]);
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirst, indexOfLast);
+  const totalPages = useMemo(() => Math.ceil(filteredProducts.length / itemsPerPage), [filteredProducts]);
+
+  // 🔁 Memoized pagination
+  const currentProducts = useMemo(() => {
+    const indexOfLast = currentPage * itemsPerPage;
+    const indexOfFirst = indexOfLast - itemsPerPage;
+    return filteredProducts.slice(indexOfFirst, indexOfLast);
+  }, [filteredProducts, currentPage]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);

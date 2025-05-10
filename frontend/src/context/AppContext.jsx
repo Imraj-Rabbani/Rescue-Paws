@@ -18,6 +18,7 @@ export const AppContextProvider = (props) => {
 
   axios.defaults.withCredentials = true;
 
+  // ✅ Check if user is logged in
   const checkAuthStatus = async () => {
     try {
       const res = await axios.get(`${backendUrl}/api/auth/status`);
@@ -37,21 +38,32 @@ export const AppContextProvider = (props) => {
     }
   };
 
+  // ✅ Fetch products only if not cached
   const fetchProducts = async () => {
     setProductLoading(true);
+
+    const cached = localStorage.getItem("productData");
+    if (cached) {
+      console.log("✅ Loaded products from localStorage");
+      setProductData(JSON.parse(cached));
+      setProductLoading(false);
+      return;
+    }
+
     try {
       const res = await axios.get(`${backendUrl}/api/products`);
       setProductData(res.data);
+      localStorage.setItem("productData", JSON.stringify(res.data));
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("❌ Error fetching products:", error);
     } finally {
       setProductLoading(false);
     }
   };
 
+  // ✅ Load everything once
   useEffect(() => {
     checkAuthStatus();
-    fetchProducts();
 
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
@@ -61,12 +73,22 @@ export const AppContextProvider = (props) => {
         console.error("Failed to parse local cart:", err);
       }
     }
+
+    const cachedProducts = localStorage.getItem("productData");
+    if (cachedProducts) {
+      setProductData(JSON.parse(cachedProducts));
+      setProductLoading(false);
+    } else {
+      fetchProducts();
+    }
   }, []);
 
+  // ✅ Save cart to localStorage on update
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
+  // ✅ Sync cart if user is logged in
   useEffect(() => {
     const syncCartWithBackend = async () => {
       if (isLoggedIn && userData) {
@@ -88,6 +110,7 @@ export const AppContextProvider = (props) => {
     syncCartWithBackend();
   }, [isLoggedIn, userData, backendUrl]);
 
+  // ✅ Restore cart (used after login)
   const restoreCartFromLocal = async () => {
     try {
       const localCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -119,6 +142,7 @@ export const AppContextProvider = (props) => {
     setShowCartRestorePrompt(false);
   };
 
+  // ✅ Add to cart logic
   const addToCart = (product, quantity = 1) => {
     const exists = cart.find(item => item.id === product.id);
     if (exists) {

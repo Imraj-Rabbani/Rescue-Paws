@@ -18,24 +18,32 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    getProductById(id).then(data => setProduct(data.product)); // ✅ FIXED
-  }, [id]);
+    const cachedProduct = productData.find(p => String(p.id || p._id) === String(id));
+    if (cachedProduct) {
+      setProduct(cachedProduct);
+    } else {
+      getProductById(id).then(data => setProduct(data.product));
+    }
+  }, [id, productData]);
 
   useEffect(() => {
     if (!product) return;
+
+    const currentId = String(product.id || product._id);
+
     const related = productData
-      .filter(p => String(p.id) !== String(id) && p.category === product.category)
+      .filter(p => String(p.id || p._id) !== currentId && p.category === product.category)
       .slice(0, 4);
 
     if (related.length < 4) {
       const extra = productData
-        .filter(p => String(p.id) !== String(id) && !related.includes(p))
+        .filter(p => String(p.id || p._id) !== currentId && !related.includes(p))
         .slice(0, 4 - related.length);
       setRelatedProducts([...related, ...extra]);
     } else {
       setRelatedProducts(related);
     }
-  }, [product, productData, id]);
+  }, [product, productData]);
 
   if (!product) return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
@@ -64,7 +72,12 @@ const ProductDetail = () => {
         <div>
           <img src={product.imageUrl} alt={product.name} className="w-full h-98 object-contain rounded-lg shadow" />
           <div className="flex gap-2 mt-4">
-            <img src={product.imageUrl} alt="Thumb 1" className="w-20 h-20 object-contain rounded border" />
+            <img
+              src={product.imageUrl}
+              alt="Thumb 1"
+              loading="lazy"
+              className="w-20 h-20 object-contain rounded border"
+            />
           </div>
         </div>
 
@@ -126,7 +139,7 @@ const ProductDetail = () => {
           <h3 className="text-2xl font-bold text-gray-800 mb-6">Related Products</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map(p => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id || p._id} product={p} />
             ))}
           </div>
         </div>
