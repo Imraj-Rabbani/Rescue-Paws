@@ -28,7 +28,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center bg-[#FFFAF0] shadow-md p-2">
+    <nav className="flex justify-between items-center shadow-md p-2">
       <div 
         className="cursor-pointer" 
         onClick={() => navigate("/")}
@@ -47,11 +47,7 @@ export default function Navbar() {
             Teams
           </a>
         </li>
-        <li>
-          <a href="#" className="hover:underline" onClick={() => navigate("/")}>
-            Rescues
-          </a>
-        </li>
+
         <li>
           <a
             href="#"
