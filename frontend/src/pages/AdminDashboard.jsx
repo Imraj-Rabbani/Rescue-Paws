@@ -6,16 +6,8 @@ import AdminNavbar from '../components/AdminNavbar';
 import { DarkmodeContext } from '../context/DarkmodeContext';
 import axios from 'axios';
 
-
-
-
-// Reusable Card Component with hover effects and consistent styling
 const Card = ({ title, children, className, onClick }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
-
-
-
-
     return (
         <motion.div
             className={`rounded-xl shadow-md border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-white/10'} ${className} cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.01]`}
@@ -30,10 +22,6 @@ const Card = ({ title, children, className, onClick }) => {
     );
 };
 
-
-
-
-// Styled Link Component
 const StyledLink = ({ to, children, className }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
     return (
@@ -46,18 +34,10 @@ const StyledLink = ({ to, children, className }) => {
     );
 };
 
-
-
-
-// Overview Card with icon and value animation
 const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
     const [displayValue, setDisplayValue] = useState(0);
     const { isDarkMode } = useContext(DarkmodeContext);
 
-
-
-
-    // Animate the value from 0 to the actual value
     useEffect(() => {
         if (typeof value === 'number') {
             const animationDuration = 1000;
@@ -68,32 +48,20 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
                 currentFrame++;
                 const progress = Math.min(currentFrame / totalFrames, 1);
                 setDisplayValue(Math.ceil(value * progress));
-
-
-
-
                 if (progress >= 1) {
                     clearInterval(interval);
                 }
             }, 1000 / frameRate);
-
-
-
-
             return () => clearInterval(interval);
         } else {
             setDisplayValue(value);
         }
     }, [value]);
 
-
-
-
     return (
         <Card
             className={`flex items-center justify-between p-4 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-md'}`}
-            onClick={onClick}
-        >
+            onClick={onClick}>
             <div>
                 <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>{title}</h3>
                 <motion.p
@@ -110,10 +78,6 @@ const OverviewCard = ({ title, value, icon: Icon, onClick }) => {
     );
 };
 
-
-
-
-// Analytics Card with a title and content area
 const AnalyticsCard = ({ title, children, chartRef }) => {
     const { isDarkMode } = useContext(DarkmodeContext);
     return (
@@ -126,17 +90,9 @@ const AnalyticsCard = ({ title, children, chartRef }) => {
     );
 };
 
-
-
-
-// Draggable Panel Component
 const DraggablePanel = ({ title, children }) => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const { isDarkMode } = useContext(DarkmodeContext);
-
-
-
-
     return (
         <motion.div
             drag
@@ -165,10 +121,6 @@ const DraggablePanel = ({ title, children }) => {
     );
 };
 
-
-
-
-// --- Main Component ---
 const AdminDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('Dashboard');
@@ -201,8 +153,6 @@ const AdminDashboard = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
-
-    //fetch all orders
     useEffect(() => {
         const fetchOrders = async () => {
             setLoading(true);
@@ -232,9 +182,7 @@ const AdminDashboard = () => {
         };
         fetchOrders();
     }, [backendUrl]);
-
-
-    //calculate pending order count
+    
     useEffect(() => {
         if (orders) {
             const pendingCount = orders.filter(order => order.status === 'Pending').length;
@@ -242,10 +190,6 @@ const AdminDashboard = () => {
         }
     }, [orders]);
 
-
-
-
-    // Fetch most ordered products
     useEffect(() => {
         const fetchMostOrdered = async () => {
             try {
@@ -260,8 +204,6 @@ const AdminDashboard = () => {
         fetchMostOrdered();
     }, []);
 
-
-    // Fetch all orders and calculate total revenue
     useEffect(() => {
         const fetchOrders = async () => {
             setLoading(true);
@@ -275,10 +217,6 @@ const AdminDashboard = () => {
                 });
                 if (res.data?.success) {
                     setOrders(res.data.orders);
-
-
-
-
                     const calculatedTotalRevenue = res.data.orders.reduce((sum, order) => {
                         return sum + (order.totalPoints || 0);
                     }, 0);
@@ -300,7 +238,6 @@ const AdminDashboard = () => {
         };
         fetchOrders();
     }, [backendUrl]);
-
 
     useEffect(() => {
         const fetchWeeklyRevenueForChart = async () => {
@@ -330,7 +267,7 @@ const AdminDashboard = () => {
                             weeklyRevenueByDay[dayIndex] += order.totalPoints || 0;
                         }
                     });
-                    // Format data for rendering the chart
+
                     const formattedData = weeklyRevenueByDay.map((revenue, index) => ({
                         day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index],
                         revenue
@@ -348,9 +285,7 @@ const AdminDashboard = () => {
         };
         fetchWeeklyRevenueForChart();
     }, [backendUrl]);
-
-
-    // Calculate Average Order Value
+  
     useEffect(() => {
         if (orders && orders.length > 0) {
             try {
@@ -373,11 +308,9 @@ const AdminDashboard = () => {
         }
     }, [orders]);
 
-
-    // Fetched recentOrders data from orders
     const recentOrders = orders ? orders.slice(0, 3) : [];
-    // Placeholder chart data
     const profitTrendsThisWeek = [10, 20, 15, 25, 30, 28, 35];
+
     const renderBarChart = (data, title) => {
         if (loadingWeeklyRevenueChart) {
             return <div className="text-center text-gray-500">Loading weekly revenue data...</div>;
@@ -437,15 +370,11 @@ const AdminDashboard = () => {
             </div>
         );
     };
-    // Function to render DONUT chart
+    
     const fixedColors = ['#FFD700', '#9B59B6', '#FF69B4', '#1E90FF', '#2ECC71'];
     const renderDonutChart = (data, title) => {
         if (!data || data.length === 0)
             return <div className="text-gray-400 text-center">No data to display</div>;
-
-
-
-
         const top5Data = data.slice(0, 5).map(item => ({
             ...item,
             orders: Number(item.orders) || 0,
@@ -509,11 +438,6 @@ const AdminDashboard = () => {
                     })}
                     <circle cx={chartRadius} cy={chartRadius} r={holeRadius} fill="white" />
                 </svg>
-
-
-
-
-                {/* Legend */}
                 <div className={`absolute top-0 right-7 text-[10px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
                     {top5Data.map((item, index) => (
                         <div key={index} className="flex items-center space-x-2">
@@ -526,18 +450,10 @@ const AdminDashboard = () => {
                     ))}
                 </div></div>);
     };
-
-
-
-
-    // Function to render a simple line chart
+    
     const renderLineChart = (data, title) => {
         const availableWidth = chartRef?.current?.offsetWidth || 200;
         if (!chartRef.current) return null;
-
-
-
-
         const maxDataValue = Math.max(...data);
         const chartHeight = 150;
         const dataPoints = data.length;
@@ -547,11 +463,7 @@ const AdminDashboard = () => {
             const y = chartHeight - (value / maxDataValue) * chartHeight;
             return { x, y, value };
         });
-
-
-
-
-        // Generate SVG path string
+        
         let path = `M ${points[0].x} ${points[0].y}`;
         for (let i = 1; i < dataPoints; i++) {
             path += ` L ${points[i].x} ${points[i].y}`;
@@ -619,10 +531,6 @@ const AdminDashboard = () => {
         );
     };
 
-
-
-
-    // Fetch product count from the database
     useEffect(() => {
         const fetchProductCount = async () => {
             try {
@@ -647,10 +555,6 @@ const AdminDashboard = () => {
         fetchProductCount();
     }, []);
 
-
-
-
-    // Fetch low stock products
     useEffect(() => {
         const fetchLowStockProducts = async () => {
             try {
@@ -667,7 +571,7 @@ const AdminDashboard = () => {
         };
         fetchLowStockProducts();
     }, []);
-    // Fetch total investment (total purchase cost)
+
     useEffect(() => {
         const fetchAllOrdersForRevenue = async () => {
             setLoadingTotalRevenue(true);
@@ -764,7 +668,7 @@ const AdminDashboard = () => {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
             />
-            {/* Main Content Area */}
+
             <div className="flex-1 p-6">
                 <AnimatePresence>
                     {showDraggablePanel && (
@@ -788,10 +692,6 @@ const AdminDashboard = () => {
                         </DraggablePanel>
                     )}
                 </AnimatePresence>
-
-
-
-
                 {activeTab === 'Dashboard' && (
                     <>
                         <div className="flex justify-center mb-8">
@@ -813,7 +713,7 @@ const AdminDashboard = () => {
                                 Show Notes
                             </button>
                         </div>
-                        {/* Top Section: Overview Cards */}
+                    
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <StyledLink to="/adminproducts">
                                 <OverviewCard
@@ -844,7 +744,7 @@ const AdminDashboard = () => {
                                 onClick={() => console.log('Average Order Value card clicked')}
                             />
                         </div>
-                        {/* Middle Section: Analytics Panel */}
+                    
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-10 mb-10">
                             <AnalyticsCard title="Weekly Revenue" chartRef={chartRef}>
                                 {renderBarChart(weeklyRevenueData, 'Weekly Revenue')}
@@ -856,7 +756,7 @@ const AdminDashboard = () => {
                                 {renderLineChart(profitTrendsThisWeek, 'Profit Trends This Week')}
                             </AnalyticsCard>
                         </div>
-                        {/* Bottom Section: Quick Tables */}
+                    
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <Card title={<span><span className="text-3xl mr-1">🛒</span> Recent Orders </span>} className="bg-[#e4c2a6]">
                                 <ul className="space-y-3.5 mt-2">

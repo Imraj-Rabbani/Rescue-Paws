@@ -8,7 +8,6 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useContext(DarkmodeContext);
-
   const SidebarItem = ({ icon, label, showLabel, onClick, isActive }) => {
     let baseClasses = 'flex items-center gap-2 cursor-pointer transition-colors duration-200';
     let activeClasses = isSidebarOpen
@@ -19,8 +18,6 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
         ? 'text-gray-300 hover:text-white hover:bg-white/10 rounded-md px-2 py-1'
         : 'text-[#8B4513] font-semibold rounded-md px-2 py-1 hover:shadow-[#8B4513]'
       : `${isDarkMode ? 'text-white' : 'text-[#8B4513] font-semibold py-0.75'}`;
-
-
 
     const finalClasses = isActive
       ? `${baseClasses} ${activeClasses}`
@@ -74,7 +71,6 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
           <Menu className={`text-xl font-boldest ${isDarkMode ? 'text-white' : 'text-[#8B4513]'}`} size={isSidebarOpen ? 24 : 30} />
         </button>
       </div>
-
       <nav className="space-y-4">
         <Link to="/admindashboard" style={{ textDecoration: 'none' }}>
           <SidebarItem icon={<LayoutDashboard />} label="Dashboard" showLabel={isSidebarOpen} onClick={() => setActiveTab('Dashboard')} isActive={activeTab === 'Dashboard'} />
@@ -99,7 +95,6 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
         </div>
       </nav>
 
-      {/* Dark Mode Toggle Button */}
       <button
         onClick={toggleDarkMode}
         className={`fixed bottom-5 left-3.5 cursor-pointer focus:outline-none transition-all duration-300
@@ -110,7 +105,6 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
         {isDarkMode ? <Sun className="text-xl text-white" /> : <Moon className="text-xl text-white" />}
       </button>
 
-      {/* Logout Confirmation Dialog */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md">
           <div className={`rounded-lg shadow-lg p-6 w-full max-w-md ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
