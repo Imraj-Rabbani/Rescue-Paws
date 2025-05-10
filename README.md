@@ -1,4 +1,4 @@
-# Stray Paws 🐾
+# Rescue Paws 🐾
 
 ## 🚀 Getting Started
 
@@ -15,10 +15,10 @@ npm run dev
 cd backend
 npm install
 npm run dev
+```
 
 
-
-**Stray Paws** is a community-driven web platform designed to bridge the gap between compassionate donors and local volunteers caring for stray animals. It enables donations, volunteer coordination, and resource distribution, all aimed at improving the lives of stray dogs and cats. The name "Stray Paws" reflects the tangible impact of a united effort to help animals in need.
+**Rescue Paws** is a community-driven web platform designed to bridge the gap between compassionate donors and local volunteers caring for stray animals. It enables donations, volunteer coordination, and resource distribution, all aimed at improving the lives of stray dogs and cats. The name "Stray Paws" reflects the tangible impact of a united effort to help animals in need.
 
 ---
 
