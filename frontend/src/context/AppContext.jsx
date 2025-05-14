@@ -18,7 +18,6 @@ export const AppContextProvider = (props) => {
 
   axios.defaults.withCredentials = true;
 
-  // ✅ Check if user is logged in
   const checkAuthStatus = async () => {
     try {
       const res = await axios.get(`${backendUrl}/api/auth/status`);
@@ -31,14 +30,11 @@ export const AppContextProvider = (props) => {
       }
     } catch (error) {
       console.error("Auth check failed:", error);
-      setIsLoggedIn(false);
-      setUserData(null);
     } finally {
       setAuthChecked(true);
     }
   };
 
-  // ✅ Fetch products only if not cached
   const fetchProducts = async () => {
     setProductLoading(true);
 
@@ -52,8 +48,22 @@ export const AppContextProvider = (props) => {
 
     try {
       const res = await axios.get(`${backendUrl}/api/products`);
-      setProductData(res.data);
-      localStorage.setItem("productData", JSON.stringify(res.data));
+
+      // ✅ Slim down product data before caching
+      const slimmedProducts = res.data.map(p => ({
+        id: p.id || p._id,
+        name: p.name,
+        sellingPrice: p.sellingPrice,
+        stockQuantity: p.stockQuantity,
+        category: p.category,
+        imageUrl: p.imageUrl, // no base64, only URLs
+        discount: p.discount || 0,
+        description: p.description || "",
+        rating: p.rating || 0
+      }));
+
+      setProductData(slimmedProducts);
+      localStorage.setItem("productData", JSON.stringify(slimmedProducts));
     } catch (error) {
       console.error("❌ Error fetching products:", error);
     } finally {
@@ -61,7 +71,6 @@ export const AppContextProvider = (props) => {
     }
   };
 
-  // ✅ Load everything once
   useEffect(() => {
     checkAuthStatus();
 
@@ -83,12 +92,23 @@ export const AppContextProvider = (props) => {
     }
   }, []);
 
-  // ✅ Save cart to localStorage on update
+  // ✅ Save slimmed cart to localStorage
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    const slimmedCart = cart.map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      name: item.name,
+      sellingPrice: item.sellingPrice,
+      imageUrl: item.imageUrl
+    }));
+
+    try {
+      localStorage.setItem("cart", JSON.stringify(slimmedCart));
+    } catch (err) {
+      console.error("Failed to save cart:", err);
+    }
   }, [cart]);
 
-  // ✅ Sync cart if user is logged in
   useEffect(() => {
     const syncCartWithBackend = async () => {
       if (isLoggedIn && userData) {
@@ -110,7 +130,6 @@ export const AppContextProvider = (props) => {
     syncCartWithBackend();
   }, [isLoggedIn, userData, backendUrl]);
 
-  // ✅ Restore cart (used after login)
   const restoreCartFromLocal = async () => {
     try {
       const localCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -142,7 +161,6 @@ export const AppContextProvider = (props) => {
     setShowCartRestorePrompt(false);
   };
 
-  // ✅ Add to cart logic
   const addToCart = (product, quantity = 1) => {
     const exists = cart.find(item => item.id === product.id);
     if (exists) {
