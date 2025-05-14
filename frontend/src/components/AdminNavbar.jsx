@@ -39,7 +39,7 @@ const AdminNavbar = ({ isSidebarOpen, toggleSidebar, activeTab, setActiveTab }) 
 
   const handleLogout = () => {
     setIsDialogOpen(false);
-    navigate('/admindashboard');
+    navigate('/login');
     setActiveTab('Dashboard');
   };
 
