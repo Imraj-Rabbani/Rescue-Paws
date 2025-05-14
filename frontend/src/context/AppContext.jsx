@@ -49,14 +49,14 @@ export const AppContextProvider = (props) => {
     try {
       const res = await axios.get(`${backendUrl}/api/products`);
 
-      // ✅ Slim down product data before caching
+      // Slim down product data before caching
       const slimmedProducts = res.data.map(p => ({
         id: p.id || p._id,
         name: p.name,
         sellingPrice: p.sellingPrice,
         stockQuantity: p.stockQuantity,
         category: p.category,
-        imageUrl: p.imageUrl, // no base64, only URLs
+        imageUrl: p.imageUrl, 
         discount: p.discount || 0,
         description: p.description || "",
         rating: p.rating || 0
@@ -92,7 +92,7 @@ export const AppContextProvider = (props) => {
     }
   }, []);
 
-  // ✅ Save slimmed cart to localStorage
+  //  Save slimmed cart to localStorage
   useEffect(() => {
     const slimmedCart = cart.map(item => ({
       id: item.id,
