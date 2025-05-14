@@ -14,7 +14,7 @@ const Card = ({ title, children, className, onClick }) => {
             {children}</div>);
 };
 
-const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode, totalRevenue, orderedPurchaseCost,weeklyRevenue, weeklyOrderPurchaseCost, weeklyProfit }) => {
+const InvestmentCalculationDisplay = ({ title, calculation, onClose, isDarkMode, totalRevenue, orderedPurchaseCost, weeklyRevenue, weeklyOrderPurchaseCost, weeklyProfit }) => {
     const textColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700';
     const fontWeight = 'font-semibold';
     const rowBgLight = isDarkMode ? 'bg-gray-50 dark:bg-gray-800' : 'bg-[#f8f4f0]';
@@ -210,16 +210,14 @@ const TotalRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, erro
                                 <th className={`py-2 px-0.3 text-sm ${fontWeight} ${headerTextColor}`}>Total Points</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {orderDetails.map((order, index) => (
-                                <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order.userId}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleString()}</td>
-                                    <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${order.totalPoints ? order.totalPoints.toFixed(2) : '0.00'}</td> {/* Added dollar sign */}
-                                </tr>
-                            ))}
-                        </tbody>
+                        <tbody>{orderDetails.map((order, index) => (
+                            <tr key={order._id} className={index % 2 === 0 ? rowBgLight : rowBgDark}>
+                                <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order._id}</td>
+                                <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{order.userId}</td>
+                                <td className={`py-2 px-3 text-sm ${valueTextColor}`}>{new Date(order.createdAt).toLocaleString()}</td>
+                                <td className={`py-2 px-3 text-sm ${valueTextColor}`}>${order.totalPoints ? order.totalPoints.toFixed(2) : '0.00'}</td>
+                            </tr>
+                        ))}</tbody>
                         <tfoot>
                             <tr>
                                 <td colSpan="3" className={`py-2 px-3 text-lg ${fontWeight} ${headerTextColor} text-right`}>Total:</td>
@@ -321,9 +319,9 @@ const WeeklyRevenueDetailsModal = ({ isOpen, onClose, orderDetails, loading, err
     const headerTextColor = isDarkMode ? 'text-gray-700 dark:text-gray-300' : 'text-[#664C36]';
     const valueTextColor = isDarkMode ? 'text-gray-800 dark:text-gray-200' : 'text-[#503a2d]';
     const modalBg = isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; // Keep the title color
+    const titleColor = isDarkMode ? 'text-gray-200' : '#A2574F'; 
     const closeButtonColor = isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#664C36] hover:text-[#3d2d24]';
-    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; // New header background color
+    const headerBgColor = isDarkMode ? 'bg-gray-600' : '#A2574F'; 
     if (!isOpen) return null;
     if (loading) {
         return (
@@ -434,27 +432,25 @@ const RevenuePage = () => {
     const [weeklyOrderPurchaseCost, setWeeklyOrderPurchaseCost] = useState(0);
     const [loadingWeeklyOrderPurchaseCost, setLoadingWeeklyOrderPurchaseCost] = useState(false);
     const [errorWeeklyOrderPurchaseCost, setErrorWeeklyOrderPurchaseCost] = useState(null);
-    const [weeklyProfit, setWeeklyProfit] = useState(null); 
-    const [loadingWeeklyProfit, setLoadingWeeklyProfit] = useState(false); 
-    const [errorWeeklyProfit, setErrorWeeklyProfit] = useState(null);    
+    const [weeklyProfit, setWeeklyProfit] = useState(null);
+    const [loadingWeeklyProfit, setLoadingWeeklyProfit] = useState(false);
+    const [errorWeeklyProfit, setErrorWeeklyProfit] = useState(null);
 
     const backendUrl = 'http://localhost:4000';
     const handleCardClick = (title) => {
         setShowCalculation(title);
         if (title === 'Total Revenue') {
             setShowTotalRevenueDetails(true);
-            fetchTotalRevenueOrderDetails();
+            //fetchTotalRevenueOrderDetails();
         } else if (title === 'Weekly Revenue') {
             setShowWeeklyRevenueDetails(true);
-            fetchWeeklyRevenueOrderDetails();
+            //fetchWeeklyRevenueOrderDetails();
         } else if (title === 'Monthly Revenue') {
             setShowMonthlyRevenueDetails(true);
             //fetchMonthlyRevenueOrderDetails();
         } else if (title === 'Average Order Value') {
         } else if (title === 'Total Profit') {
         } else if (title === 'Weekly Profit') {
-            
-
         }
     };
 
@@ -835,9 +831,9 @@ const RevenuePage = () => {
                     <Card title="Weekly Profit" onClick={() => handleCardClick("Weekly Profit")}>
                         <div className="flex items-center justify-center">
                             <CircleDollarSign className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-lime-400' : 'text-lime-600'}`} />
-                            {loadingWeeklyProfit ? (  // Show loading state
+                            {loadingWeeklyProfit ? (
                                 <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-[#A2574F]'}`}>Loading...</p>
-                            ) : errorWeeklyProfit ? ( // Show error state
+                            ) : errorWeeklyProfit ? (
                                 <p className={`text-red-500`}>{errorWeeklyProfit}</p>
                             ) : (
                                 <p className={`text-2xl font-semibold ${isDarkMode ? 'text-gray-200' : (weeklyProfit >= 0 ? 'text-[#2E7D32]' : 'text-[#F44336]')}`}>
@@ -849,7 +845,7 @@ const RevenuePage = () => {
                             Profit for the current week (starting Sunday).
                         </p>
                     </Card>
-                    
+
                     <Card title="Monthly Revenue" onClick={() => handleCardClick("Monthly Revenue")}>
                         <div className="flex items-center justify-center">
                             <CalendarDays className={`w-8 h-8 mr-2 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
@@ -923,5 +919,4 @@ const RevenuePage = () => {
                 )}
             </div> </div>);
 };
-
 export default RevenuePage;
