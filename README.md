@@ -64,7 +64,7 @@ npm run dev
 
 ---
 
-👨‍💻 Developed By
+### 👨‍💻 Developed By
 Imraj Rabbani
 
 Pranto Roy
